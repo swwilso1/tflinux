@@ -467,6 +467,12 @@ namespace TF::Linux::Udev
         void match_subsystem_and_devtype(const string_type &subsystem, const string_type &devtype);
 
         /**
+         * @brief method to match a subsystem
+         * @param subsystem
+         */
+        void match_subsystem(const string_type &subsystem);
+
+        /**
          * @brief method to match a tag
          * @param tag
          */

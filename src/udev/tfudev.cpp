@@ -446,7 +446,16 @@ namespace TF::Linux::Udev
             if(the_bytes != nullptr && the_length > 0)
             {
                 auto length_to_insert = *(the_bytes + the_length - 1) == '\n' ? the_length - 1 : the_length;
-                map.insert(std::make_pair(attribute_name, string_type(the_bytes, length_to_insert)));
+                string_type attribute_value;
+                try
+                {
+                    attribute_value = string_type {the_bytes, length_to_insert};
+                }
+                catch(std::runtime_error &e)
+                {
+                    continue;
+                }
+                map.insert(std::make_pair(attribute_name, attribute_value));
             }
         }
     }
@@ -625,6 +634,17 @@ namespace TF::Linux::Udev
         if(udev_api_result < 0)
         {
             throw system_no_code_error {"add match subsystem and devtype failed"};
+        }
+    }
+
+    void Monitor::match_subsystem(const string_type &subsystem)
+    {
+        auto substring_cstring_contents = subsystem.cStr();
+        auto udev_api_result =
+            udev_monitor_filter_add_match_subsystem_devtype(m_monitor, substring_cstring_contents.get(), nullptr);
+        if(udev_api_result < 0)
+        {
+            throw system_no_code_error {"add match subsystem and devtype failed (no devtype)"};
         }
     }
 
