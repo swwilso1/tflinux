@@ -25,7 +25,41 @@ SOFTWARE.
 
 ******************************************************************************/
 
-#include "tfautofiledescriptor.hpp"
-#include "tfexceptions.hpp"
-#include "tffileobserver.hpp"
-#include "tfudev.hpp"
+#ifndef TFAUTOFILEDESCRIPTOR_HPP
+#define TFAUTOFILEDESCRIPTOR_HPP
+
+#include <unistd.h>
+
+namespace TF::Linux
+{
+
+    class AutoFileDescriptor
+    {
+    public:
+        explicit AutoFileDescriptor(int fd) : m_fd(fd)
+        {
+        }
+
+        AutoFileDescriptor(const AutoFileDescriptor &fd) = delete;
+        AutoFileDescriptor(AutoFileDescriptor &&fd) = delete;
+
+        ~AutoFileDescriptor()
+        {
+            (void)close(m_fd);
+        }
+
+        AutoFileDescriptor &operator=(const AutoFileDescriptor &fd) = delete;
+        AutoFileDescriptor &operator=(AutoFileDescriptor &&fd) = delete;
+
+        int operator*() const
+        {
+            return m_fd;
+        }
+
+    private:
+        int m_fd;
+    };
+
+}    // namespace TF::Linux
+
+#endif    // TFAUTOFILEDESCRIPTOR_HPP

@@ -25,7 +25,43 @@ SOFTWARE.
 
 ******************************************************************************/
 
-#include "tfautofiledescriptor.hpp"
-#include "tfexceptions.hpp"
-#include "tffileobserver.hpp"
-#include "tfudev.hpp"
+#ifndef TFFILEOBSERVER_HPP
+#define TFFILEOBSERVER_HPP
+
+#include <functional>
+#include <sys/fanotify.h>
+#include "TFFoundation.hpp"
+
+using namespace TF::Foundation;
+
+namespace TF::Linux
+{
+
+    class FileObserver
+    {
+    public:
+        using string_type = String;
+        using event_metadata_type = struct fanotify_event_metadata;
+
+        FileObserver(int flags, int modes);
+
+        ~FileObserver();
+
+        void mark(const string_type &path, uint32_t flags, uint64_t mask) const;
+
+        void mark(uint32_t flags, uint64_t mask, int dirfd, const string_type &path) const;
+
+        void run(const std::function<void(event_metadata_type *)> &event_callback);
+
+        void stop();
+
+    private:
+        int m_notifier_fd;
+        int m_pipe_fd[2];
+
+        const static int EVENT_BUFFER_SIZE = 100;
+    };
+
+}    // namespace TF::Linux
+
+#endif    // TFFILEOBSERVER_HPP
