@@ -109,6 +109,7 @@ namespace TF::Linux
 
                                       current_event = FAN_EVENT_NEXT(current_event, bytes_read);
                                   }
+                                  break;
                               }
                           });
 
