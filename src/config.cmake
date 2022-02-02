@@ -28,9 +28,21 @@ add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/headers/${LIBRARY_NAME}/up
 
 add_custom_target(LinuxHeaders DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/headers/${LIBRARY_NAME}/updated)
 
+list(APPEND COMPILE_OPTIONS -Wall -Wextra -Wconversion -Wsign-conversion)
+#list(APPEND COMPILE_FLAGS -Werror -pedantic-errors)
+
+if(BUILD_PROFILE)
+    list(APPEND COMPILE_OPTIONS -pg)
+endif()
+
+if (BUILD_SANITIZER)
+    list(APPEND COMPILE_OPTIONS -fsanitize=address -fno-omit-frame-pointer)
+endif()
+
 add_library(${SHARED_LIBRARY_NAME} SHARED ${LIBRARY_SOURCE_FILES} ${LIBRARY_HEADER_FILES})
 set_target_properties(${SHARED_LIBRARY_NAME} PROPERTIES
     OUTPUT_NAME ${LIBRARY_NAME})
+target_compile_options(${SHARED_LIBRARY_NAME} PRIVATE ${COMPILE_OPTIONS})
 target_include_directories(${SHARED_LIBRARY_NAME} INTERFACE
         $<INSTALL_INTERFACE:include/TFLinux>)
 target_link_libraries(${SHARED_LIBRARY_NAME} PRIVATE
@@ -45,6 +57,7 @@ add_dependencies(${SHARED_LIBRARY_NAME} LinuxHeaders)
 add_library(${STATIC_LIBRARY_NAME} STATIC ${LIBRARY_SOURCE_FILES} ${LIBRARY_HEADER_FILES})
 set_target_properties(${STATIC_LIBRARY_NAME} PROPERTIES
         OUTPUT_NAME ${LIBRARY_NAME})
+target_compile_options(${STATIC_LIBRARY_NAME} PRIVATE ${COMPILE_OPTIONS})
 target_include_directories(${STATIC_LIBRARY_NAME} INTERFACE
         $<INSTALL_INTERFACE:include/TFLinux>)
 target_link_libraries(${STATIC_LIBRARY_NAME} PRIVATE
