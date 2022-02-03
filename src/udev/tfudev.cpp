@@ -57,6 +57,18 @@ namespace TF::Linux::Udev
         udev_unref(m_context);
     }
 
+    Device::Device(Device &d) : m_device {}
+    {
+        d.retain();
+        m_device = d.m_device;
+    }
+
+    Device::Device(Device &&d) : m_device {}
+    {
+        d.retain();
+        m_device = d.m_device;
+    }
+
     Device::Device(const context_type &ctx, const string_type &path) : m_device {nullptr}
     {
         auto path_cstring_value = path.cStr();
@@ -92,6 +104,33 @@ namespace TF::Linux::Udev
     Device::~Device()
     {
         udev_device_unref(m_device);
+        m_device = reinterpret_cast<decltype(m_device)>(0xdeadbeef);
+    }
+
+    Device &Device::operator=(Device &d)
+    {
+        if(this == &d)
+        {
+            return *this;
+        }
+
+        d.retain();
+        release();
+        m_device = d.m_device;
+        return *this;
+    }
+
+    Device &Device::operator=(Device &&d)
+    {
+        if(this == &d)
+        {
+            return *this;
+        }
+
+        d.retain();
+        release();
+        m_device = d.m_device;
+        return *this;
     }
 
     void Device::retain()

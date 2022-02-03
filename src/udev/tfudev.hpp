@@ -106,6 +106,18 @@ namespace TF::Linux::Udev
         }
 
         /**
+         * @brief copy constructor
+         * @param d the other d
+         */
+        Device(Device &d);
+
+        /**
+         * @brief move constructor
+         * @param d the other d
+         */
+        Device(Device &&d);
+
+        /**
          * @brief constructor with context and path
          * @param ctx the udev context
          * @param path the path
@@ -130,6 +142,20 @@ namespace TF::Linux::Udev
 
         /** destructor */
         ~Device();
+
+        /**
+         * @brief copy assignment operator
+         * @param d the other device
+         * @return this device with a reference to @e d.
+         */
+        Device &operator=(Device &d);
+
+        /**
+         * @brief move assignment operator
+         * @param d the other device
+         * @return this device witha reference @e d.
+         */
+        Device &operator=(Device &&d);
 
         /**
          * @brief method to increase the reference count on the device object.
