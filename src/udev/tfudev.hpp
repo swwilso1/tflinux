@@ -75,7 +75,7 @@ namespace TF::Linux::Udev
         void release();
 
     private:
-        struct udev *m_context;
+        struct udev * m_context;
 
         // Query needs access to the udev *.
         friend class Query;
@@ -86,7 +86,6 @@ namespace TF::Linux::Udev
         // Monitor needs access to the udev *.
         friend class Monitor;
     };
-
 
     /**
      * The Device class encapsulates the udev device functionality.
@@ -101,28 +100,26 @@ namespace TF::Linux::Udev
         /**
          * @brief default constructor needed for use with Result<Device> objects.
          */
-        Device() : m_device {nullptr}
-        {
-        }
+        Device() : m_device{nullptr} {}
 
         /**
          * @brief copy constructor
          * @param d the other d
          */
-        Device(Device &d);
+        Device(Device & d);
 
         /**
          * @brief move constructor
          * @param d the other d
          */
-        Device(Device &&d);
+        Device(Device && d);
 
         /**
          * @brief constructor with context and path
          * @param ctx the udev context
          * @param path the path
          */
-        Device(const context_type &ctx, const string_type &path);
+        Device(const context_type & ctx, const string_type & path);
 
         /**
          * @brief constructor with context, device type and device number
@@ -130,7 +127,7 @@ namespace TF::Linux::Udev
          * @param type the device type
          * @param number the number
          */
-        Device(const context_type &ctx, char type, dev_t number);
+        Device(const context_type & ctx, char type, dev_t number);
 
         /**
          * @brief constructor with context, subsystem and system name
@@ -138,7 +135,7 @@ namespace TF::Linux::Udev
          * @param subsystem the subsystem name
          * @param sysname the system name
          */
-        Device(const context_type &ctx, const string_type &subsystem, const string_type &sysname);
+        Device(const context_type & ctx, const string_type & subsystem, const string_type & sysname);
 
         /** destructor */
         ~Device();
@@ -148,14 +145,14 @@ namespace TF::Linux::Udev
          * @param d the other device
          * @return this device with a reference to @e d.
          */
-        Device &operator=(Device &d);
+        Device & operator=(Device & d);
 
         /**
          * @brief move assignment operator
          * @param d the other device
          * @return this device witha reference @e d.
          */
-        Device &operator=(Device &&d);
+        Device & operator=(Device && d);
 
         /**
          * @brief method to increase the reference count on the device object.
@@ -208,21 +205,21 @@ namespace TF::Linux::Udev
          * @param key the key
          * @return the value associated with key
          */
-        [[nodiscard]] string_type get_property_value_for_key(const string_type &key);
+        [[nodiscard]] string_type get_property_value_for_key(const string_type & key);
 
         /**
          * @brief method to get a system attribute value for a key.
          * @param key the key
          * @return the value associated with the key
          */
-        [[nodiscard]] string_type get_system_attribute_for_key(const string_type &key);
+        [[nodiscard]] string_type get_system_attribute_for_key(const string_type & key);
 
         /**
          * @brief method to set a system attribute with key and value
          * @param key the key
          * @param value the value
          */
-        void set_system_attribute_value(const string_type &key, const string_type &value);
+        void set_system_attribute_value(const string_type & key, const string_type & value);
 
         /**
          * @brief method to get the sys path for the device
@@ -300,8 +297,8 @@ namespace TF::Linux::Udev
          * @return a result object whose succeeded member is true if the parent was retrieved and
          * false otherwise.  On success the result object value member contains the parent device.
          */
-        [[nodiscard]] Result<Device> get_parent_with_subsystem_dev_type(const string_type &subsystem,
-                                                                        const string_type &devtype);
+        [[nodiscard]] Result<Device> get_parent_with_subsystem_dev_type(const string_type & subsystem,
+                                                                        const string_type & devtype);
 
         /**
          * @brief method to load attributes of a device from the system path of the device.
@@ -316,7 +313,7 @@ namespace TF::Linux::Udev
          * @param o the stream object
          * @return the stream object.
          */
-        [[nodiscard]] std::ostream &description(std::ostream &o) const;
+        [[nodiscard]] std::ostream & description(std::ostream & o) const;
 
     private:
         /**
@@ -325,7 +322,7 @@ namespace TF::Linux::Udev
          * @param f the udev function to execute
          * @return a map of the key value pairs returned by the udev function call.
          */
-        [[nodiscard]] string_map_type get_values(const std::function<udev_list_entry *(udev_device *)> &f) const;
+        [[nodiscard]] string_map_type get_values(const std::function<udev_list_entry *(udev_device *)> & f) const;
 
         /**
          * @brief helper method for udev functions that take a key and return a value.
@@ -333,15 +330,15 @@ namespace TF::Linux::Udev
          * @param key the key
          * @return the value associated with key.
          */
-        [[nodiscard]] string_type get_value(const std::function<const char *(udev_device *, const char *Key)> &f,
-                                            const string_type &key);
+        [[nodiscard]] string_type get_value(const std::function<const char *(udev_device *, const char * Key)> & f,
+                                            const string_type & key);
 
         /**
          * @brief helper method for udev functions that return a property-like value.
          * @param f the udev library function
          * @return the property-like value returned from the library function.
          */
-        [[nodiscard]] string_type get_property(const std::function<const char *(udev_device *)> &f) const;
+        [[nodiscard]] string_type get_property(const std::function<const char *(udev_device *)> & f) const;
 
         /**
          * @brief helper method to assist in loading attributes for a device from the /sys
@@ -353,10 +350,10 @@ namespace TF::Linux::Udev
          * @param is_sub_dir true if the method is called on a sub-directory (ie a recursed dir) and
          * false otherwise.
          */
-        static void load_sub_attributes_into_map(FileManager &manager, string_map_type &map, const string_type &path,
-                                                 const string_type &prefix, bool is_sub_dir);
+        static void load_sub_attributes_into_map(FileManager & manager, string_map_type & map, const string_type & path,
+                                                 const string_type & prefix, bool is_sub_dir);
 
-        udev_device *m_device;
+        udev_device * m_device;
 
         // A query needs access to the libudev udev_device pointer.
         friend class Query;
@@ -364,7 +361,6 @@ namespace TF::Linux::Udev
         // A Monitor needs access to the libudev udev_device pointer.
         friend class Monitor;
     };
-
 
     /**
      * The Query class encapsulates the udev library concept of enumeration
@@ -381,7 +377,7 @@ namespace TF::Linux::Udev
          * @brief constructor
          * @param ctx the context object.
          */
-        explicit Query(const context_type &ctx);
+        explicit Query(const context_type & ctx);
 
         /** destructor */
         ~Query();
@@ -400,52 +396,52 @@ namespace TF::Linux::Udev
          * @brief method to add a subsystem value to the query.
          * @param subsystem the subsystem
          */
-        void match_subsystem(const string_type &subsystem);
+        void match_subsystem(const string_type & subsystem);
 
         /**
          * @brief method to tell the query not to match a subsystem.
          * @param subsystem the subsystem
          */
-        void do_not_match_subsystem(const string_type &subsystem);
+        void do_not_match_subsystem(const string_type & subsystem);
 
         /**
          * @brie method to add an attribute/value pair to the query
          * @param attribute the attribute name
          * @param value the value
          */
-        void match_system_attribute(const string_type &attribute, const string_type &value);
+        void match_system_attribute(const string_type & attribute, const string_type & value);
 
         /**
          * @brief method to tell the query to not match an attribute/value pair.
          * @param attribute the attribute
          * @param value the value
          */
-        void do_not_match_system_attribute(const string_type &attribute, const string_type &value);
+        void do_not_match_system_attribute(const string_type & attribute, const string_type & value);
 
         /**
          * @brief method to match a property/value pair.
          * @param property
          * @param value
          */
-        void match_property(const string_type &property, const string_type &value);
+        void match_property(const string_type & property, const string_type & value);
 
         /**
          * @brief method to match a system name
          * @param name
          */
-        void match_system_name(const string_type &name);
+        void match_system_name(const string_type & name);
 
         /**
          * @brief method to match a tag
          * @param tag
          */
-        void match_tag(const string_type &tag);
+        void match_tag(const string_type & tag);
 
         /**
          * @brief method to have the query match a device with a given parent.
          * @param device the parent device
          */
-        void match_parent(const Device &device);
+        void match_parent(const Device & device);
 
         /**
          * @brief method to run the query and return the values.
@@ -454,7 +450,7 @@ namespace TF::Linux::Udev
         string_list_type run();
 
     private:
-        udev_enumerate *m_enumerator;
+        udev_enumerate * m_enumerator;
 
         // Need access to Device internal for setting parent.
         //        friend class Device;
@@ -480,7 +476,7 @@ namespace TF::Linux::Udev
          * @param ctx
          * @param name
          */
-        Monitor(const context_type &ctx, const string_type &name);
+        Monitor(const context_type & ctx, const string_type & name);
 
         /** descrutor */
         ~Monitor();
@@ -490,19 +486,19 @@ namespace TF::Linux::Udev
          * @param subsystem
          * @param devtype
          */
-        void match_subsystem_and_devtype(const string_type &subsystem, const string_type &devtype);
+        void match_subsystem_and_devtype(const string_type & subsystem, const string_type & devtype);
 
         /**
          * @brief method to match a subsystem
          * @param subsystem
          */
-        void match_subsystem(const string_type &subsystem);
+        void match_subsystem(const string_type & subsystem);
 
         /**
          * @brief method to match a tag
          * @param tag
          */
-        void match_tag(const string_type &tag);
+        void match_tag(const string_type & tag);
 
         /**
          * @brief method to get the file descriptor for the monitor
@@ -545,10 +541,9 @@ namespace TF::Linux::Udev
         void release();
 
     private:
-        udev_monitor *m_monitor;
+        udev_monitor * m_monitor;
     };
 
+} // namespace TF::Linux::Udev
 
-}    // namespace TF::Linux::Udev
-
-#endif    // TFUDEV_HPP
+#endif // TFUDEV_HPP

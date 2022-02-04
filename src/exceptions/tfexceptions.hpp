@@ -40,13 +40,13 @@ namespace TF::Linux
     public:
         using parent_type = std::runtime_error;
 
-        explicit system_no_code_error(const std::string &msg);
+        explicit system_no_code_error(const std::string & msg);
 
-        explicit system_no_code_error(const char *msg);
+        explicit system_no_code_error(const char * msg);
 
-        explicit system_no_code_error(const TF::Foundation::String &msg);
+        explicit system_no_code_error(const TF::Foundation::String & msg);
     };
 
-}    // namespace TF::Linux
+} // namespace TF::Linux
 
-#endif    // TFEXCEPTIONS_HPP
+#endif // TFEXCEPTIONS_HPP

@@ -47,11 +47,11 @@ namespace TF::Linux
 
         ~FileObserver();
 
-        void mark(const string_type &path, uint32_t flags, uint64_t mask) const;
+        void mark(const string_type & path, uint32_t flags, uint64_t mask) const;
 
-        void mark(uint32_t flags, uint64_t mask, int dirfd, const string_type &path) const;
+        void mark(uint32_t flags, uint64_t mask, int dirfd, const string_type & path) const;
 
-        void run(const std::function<void(event_metadata_type *)> &event_callback);
+        void run(const std::function<void(event_metadata_type *)> & event_callback);
 
         void stop();
 
@@ -62,6 +62,6 @@ namespace TF::Linux
         const static int EVENT_BUFFER_SIZE = 100;
     };
 
-}    // namespace TF::Linux
+} // namespace TF::Linux
 
-#endif    // TFFILEOBSERVER_HPP
+#endif // TFFILEOBSERVER_HPP

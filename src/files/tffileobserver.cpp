@@ -35,18 +35,18 @@ SOFTWARE.
 namespace TF::Linux
 {
 
-    FileObserver::FileObserver(int flags, int modes) : m_notifier_fd {0}, m_pipe_fd {0, 0}
+    FileObserver::FileObserver(int flags, int modes) : m_notifier_fd{0}, m_pipe_fd{0, 0}
     {
         m_notifier_fd = fanotify_init(flags, modes);
-        if(m_notifier_fd < 0)
+        if (m_notifier_fd < 0)
         {
-            throw std::system_error {errno, std::system_category(), "fanotify_init failed"};
+            throw std::system_error{errno, std::system_category(), "fanotify_init failed"};
         }
 
         auto pipe_api_result = pipe2(m_pipe_fd, O_CLOEXEC | O_NONBLOCK);
-        if(pipe_api_result < 0)
+        if (pipe_api_result < 0)
         {
-            throw std::system_error {errno, std::system_category()};
+            throw std::system_error{errno, std::system_category()};
         }
     }
 
@@ -55,65 +55,65 @@ namespace TF::Linux
         close(m_notifier_fd);
     }
 
-    void FileObserver::mark(const string_type &path, uint32_t flags, uint64_t mask) const
+    void FileObserver::mark(const string_type & path, uint32_t flags, uint64_t mask) const
     {
         mark(flags, mask, AT_FDCWD, path);
     }
 
-    void FileObserver::mark(uint32_t flags, uint64_t mask, int dirfd, const string_type &path) const
+    void FileObserver::mark(uint32_t flags, uint64_t mask, int dirfd, const string_type & path) const
     {
         auto path_cstring_value = path.cStr();
         auto mark_api_result = fanotify_mark(m_notifier_fd, flags, mask, dirfd, path_cstring_value.get());
-        if(mark_api_result < 0)
+        if (mark_api_result < 0)
         {
-            throw std::system_error {errno, std::system_category(), "fanotify_mark failed"};
+            throw std::system_error{errno, std::system_category(), "fanotify_mark failed"};
         }
     }
 
-    void FileObserver::run(const std::function<void(event_metadata_type *)> &event_callback)
+    void FileObserver::run(const std::function<void(event_metadata_type *)> & event_callback)
     {
-        bool keep_monitoring {true};
+        bool keep_monitoring{true};
         Poller poller;
-        poller.add_handle(m_pipe_fd[0], PollEvent::Read, [&keep_monitoring](int) -> void { keep_monitoring = false; });
+        poller.add_handle(m_pipe_fd[0], PollEvent::Read, [&keep_monitoring](int) -> void {
+            keep_monitoring = false;
+        });
 
-        poller.add_handle(m_notifier_fd, PollEvent::Read,
-                          [&event_callback, &keep_monitoring, this](int) -> void
-                          {
-                              event_metadata_type event_buffer[EVENT_BUFFER_SIZE];
-                              event_metadata_type *current_event;
+        poller.add_handle(m_notifier_fd, PollEvent::Read, [&event_callback, &keep_monitoring, this](int) -> void {
+            event_metadata_type event_buffer[EVENT_BUFFER_SIZE];
+            event_metadata_type * current_event;
 
-                              while(keep_monitoring)
-                              {
-                                  auto bytes_read = read(this->m_notifier_fd, reinterpret_cast<void *>(event_buffer),
-                                                         sizeof(event_buffer));
-                                  if(bytes_read < 0 && errno != EAGAIN)
-                                  {
-                                      throw std::system_error {errno, std::system_category(), "read failed"};
-                                  }
+            while (keep_monitoring)
+            {
+                auto bytes_read =
+                    read(this->m_notifier_fd, reinterpret_cast<void *>(event_buffer), sizeof(event_buffer));
+                if (bytes_read < 0 && errno != EAGAIN)
+                {
+                    throw std::system_error{errno, std::system_category(), "read failed"};
+                }
 
-                                  if(bytes_read <= 0)
-                                  {
-                                      break;
-                                  }
+                if (bytes_read <= 0)
+                {
+                    break;
+                }
 
-                                  current_event = event_buffer;
+                current_event = event_buffer;
 
-                                  while(keep_monitoring && FAN_EVENT_OK(current_event, bytes_read))
-                                  {
-                                      if(current_event->vers != FANOTIFY_METADATA_VERSION)
-                                      {
-                                          throw std::runtime_error {"Mismatched event metadata version"};
-                                      }
+                while (keep_monitoring && FAN_EVENT_OK(current_event, bytes_read))
+                {
+                    if (current_event->vers != FANOTIFY_METADATA_VERSION)
+                    {
+                        throw std::runtime_error{"Mismatched event metadata version"};
+                    }
 
-                                      event_callback(current_event);
+                    event_callback(current_event);
 
-                                      current_event = FAN_EVENT_NEXT(current_event, bytes_read);
-                                  }
-                                  break;
-                              }
-                          });
+                    current_event = FAN_EVENT_NEXT(current_event, bytes_read);
+                }
+                break;
+            }
+        });
 
-        while(keep_monitoring)
+        while (keep_monitoring)
         {
             (void)poller.wait_for(std::chrono::milliseconds(250));
         }
@@ -129,5 +129,4 @@ namespace TF::Linux
         (void)write(m_pipe_fd[1], &signal_value, sizeof(signal_value));
     }
 
-
-}    // namespace TF::Linux
+} // namespace TF::Linux

@@ -36,20 +36,18 @@ namespace TF::Linux
     class AutoFileDescriptor
     {
     public:
-        explicit AutoFileDescriptor(int fd) : m_fd(fd)
-        {
-        }
+        explicit AutoFileDescriptor(int fd) : m_fd(fd) {}
 
-        AutoFileDescriptor(const AutoFileDescriptor &fd) = delete;
-        AutoFileDescriptor(AutoFileDescriptor &&fd) = delete;
+        AutoFileDescriptor(const AutoFileDescriptor & fd) = delete;
+        AutoFileDescriptor(AutoFileDescriptor && fd) = delete;
 
         ~AutoFileDescriptor()
         {
             (void)close(m_fd);
         }
 
-        AutoFileDescriptor &operator=(const AutoFileDescriptor &fd) = delete;
-        AutoFileDescriptor &operator=(AutoFileDescriptor &&fd) = delete;
+        AutoFileDescriptor & operator=(const AutoFileDescriptor & fd) = delete;
+        AutoFileDescriptor & operator=(AutoFileDescriptor && fd) = delete;
 
         int operator*() const
         {
@@ -60,6 +58,6 @@ namespace TF::Linux
         int m_fd;
     };
 
-}    // namespace TF::Linux
+} // namespace TF::Linux
 
-#endif    // TFAUTOFILEDESCRIPTOR_HPP
+#endif // TFAUTOFILEDESCRIPTOR_HPP

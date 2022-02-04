@@ -30,16 +30,10 @@ SOFTWARE.
 namespace TF::Linux
 {
 
-    system_no_code_error::system_no_code_error(const std::string &msg) : parent_type {msg}
-    {
-    }
+    system_no_code_error::system_no_code_error(const std::string & msg) : parent_type{msg} {}
 
-    system_no_code_error::system_no_code_error(const char *msg) : parent_type {msg}
-    {
-    }
+    system_no_code_error::system_no_code_error(const char * msg) : parent_type{msg} {}
 
-    system_no_code_error::system_no_code_error(const TF::Foundation::String &msg) : parent_type {msg.stlString()}
-    {
-    }
+    system_no_code_error::system_no_code_error(const TF::Foundation::String & msg) : parent_type{msg.stlString()} {}
 
-}    // namespace TF::Linux
+} // namespace TF::Linux
