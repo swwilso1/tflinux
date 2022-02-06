@@ -92,7 +92,7 @@ namespace TF::Linux::Udev
         m_device{nullptr}
     {
         auto subsystem_cstring_value = subsystem.cStr();
-        auto sysname_cstring_value = subsystem.cStr();
+        auto sysname_cstring_value = sysname.cStr();
         m_device = udev_device_new_from_subsystem_sysname(ctx.m_context, subsystem_cstring_value.get(),
                                                           sysname_cstring_value.get());
         if (m_device == nullptr)
@@ -332,7 +332,7 @@ namespace TF::Linux::Udev
     }
 
 #define OSTREAM_HELPER(var, text, method) \
-    auto(var) = method();                 \
+    auto var = method();                  \
     if ((var).length() > 0)               \
     {                                     \
         if (needs_comma)                  \

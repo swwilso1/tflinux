@@ -35,7 +35,7 @@ SOFTWARE.
 namespace TF::Linux
 {
 
-    FileObserver::FileObserver(int flags, int modes) : m_notifier_fd{0}, m_pipe_fd{0, 0}
+    FileObserver::FileObserver(unsigned int flags, unsigned int modes) : m_notifier_fd{0}, m_pipe_fd{0, 0}
     {
         m_notifier_fd = fanotify_init(flags, modes);
         if (m_notifier_fd < 0)

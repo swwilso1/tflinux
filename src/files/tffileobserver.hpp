@@ -43,7 +43,7 @@ namespace TF::Linux
         using string_type = String;
         using event_metadata_type = struct fanotify_event_metadata;
 
-        FileObserver(int flags, int modes);
+        FileObserver(unsigned int flags, unsigned int modes);
 
         ~FileObserver();
 
