@@ -101,6 +101,15 @@ namespace TF::Linux::Udev
         }
     }
 
+    Device::Device(udev_device * device) : m_device{nullptr}
+    {
+        if (device == nullptr)
+        {
+            throw std::invalid_argument{"Device argument cannot be nullptr"};
+        }
+        m_device = device;
+    }
+
     Device::~Device()
     {
         udev_device_unref(m_device);
@@ -261,29 +270,22 @@ namespace TF::Linux::Udev
         return udev_device_get_devnum(m_device);
     }
 
-    Result<Device> Device::get_parent()
+    std::optional<Device> Device::get_parent()
     {
-        Result<Device> result;
-
         udev_device_ref(m_device);
-        result.value.m_device = udev_device_get_parent(m_device);
-        if (result.value.m_device)
+        auto parent_device = udev_device_get_parent(m_device);
+        if (parent_device)
         {
-            result.succeeded = true;
-            udev_device_ref(result.value.m_device);
+            udev_device_ref(parent_device);
+            return std::optional<Device>{Device{parent_device}};
         }
-        else
-        {
-            udev_device_unref(m_device);
-        }
-        return result;
+        udev_device_unref(m_device);
+        return std::optional<Device>{};
     }
 
-    Result<Device> Device::get_parent_with_subsystem_dev_type(const string_type & subsystem,
-                                                              const string_type & devtype)
+    std::optional<Device> Device::get_parent_with_subsystem_dev_type(const string_type & subsystem,
+                                                                     const string_type & devtype)
     {
-        Result<Device> result;
-
         auto subsystem_cstring_value = subsystem.cStr();
         auto devtype_cstring_value = devtype.cStr();
 
@@ -294,22 +296,20 @@ namespace TF::Linux::Udev
         // Increase the reference count.
         udev_device_ref(m_device);
 
-        result.value.m_device = udev_device_get_parent_with_subsystem_devtype(m_device, subsystem_cstring_value.get(),
-                                                                              devtype_cstring_value.get());
-        if (result.value.m_device)
+        auto parent_device = udev_device_get_parent_with_subsystem_devtype(m_device, subsystem_cstring_value.get(),
+                                                                           devtype_cstring_value.get());
+        if (parent_device)
         {
             // The reference count was auto-decremented, so we do not need to decrement the count here.
-            result.succeeded = true;
             // Retain a reference here. So that when the destructor runs the reference counts are correct.
-            udev_device_ref(result.value.m_device);
+            udev_device_ref(parent_device);
+            return std::optional<Device>{Device{parent_device}};
         }
-        else
-        {
-            // udev_device_get_parent_with_subsystem_devtype failed to find a parent, so it left m_device's
-            // refcount unmodified which means we have one refcount too many.  Decrement the count here.
-            udev_device_unref(m_device);
-        }
-        return result;
+
+        // udev_device_get_parent_with_subsystem_devtype failed to find a parent, so it left m_device's
+        // refcount unmodified which means we have one refcount too many.  Decrement the count here.
+        udev_device_unref(m_device);
+        return std::optional<Device>{};
     }
 
     Device::string_map_type Device::load_attributes_from_device_path()
@@ -322,10 +322,10 @@ namespace TF::Linux::Udev
             auto device_path = string_type("/sys") + property_map["DEVPATH"];
             load_sub_attributes_into_map(manager, attribute_map, device_path, "", false);
 
-            auto get_parent_result = get_parent();
-            if (get_parent_result.succeeded)
+            auto get_parent_worked = get_parent();
+            if (get_parent_worked)
             {
-                attribute_map.merge(get_parent_result.value.load_attributes_from_device_path());
+                attribute_map.merge(get_parent_worked.value().load_attributes_from_device_path());
             }
         }
         return attribute_map;

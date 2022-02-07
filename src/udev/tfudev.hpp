@@ -33,6 +33,7 @@ SOFTWARE.
 #include <unordered_map>
 #include <string>
 #include <functional>
+#include <optional>
 #include <libudev.h>
 #include "TFFoundation.hpp"
 
@@ -98,7 +99,7 @@ namespace TF::Linux::Udev
         using string_map_type = std::unordered_map<String, String>;
 
         /**
-         * @brief default constructor needed for use with Result<Device> objects.
+         * @brief default constructor needed for use with std::optional<Device> objects.
          */
         Device() : m_device{nullptr} {}
 
@@ -288,7 +289,7 @@ namespace TF::Linux::Udev
          * On success the result object value member contains the
          * parent device.
          */
-        [[nodiscard]] Result<Device> get_parent();
+        [[nodiscard]] std::optional<Device> get_parent();
 
         /**
          * @brief method to get the parent of the device with a particular subsystem and device type
@@ -297,8 +298,8 @@ namespace TF::Linux::Udev
          * @return a result object whose succeeded member is true if the parent was retrieved and
          * false otherwise.  On success the result object value member contains the parent device.
          */
-        [[nodiscard]] Result<Device> get_parent_with_subsystem_dev_type(const string_type & subsystem,
-                                                                        const string_type & devtype);
+        [[nodiscard]] std::optional<Device> get_parent_with_subsystem_dev_type(const string_type & subsystem,
+                                                                               const string_type & devtype);
 
         /**
          * @brief method to load attributes of a device from the system path of the device.
@@ -316,6 +317,12 @@ namespace TF::Linux::Udev
         [[nodiscard]] std::ostream & description(std::ostream & o) const;
 
     private:
+        /**
+         * Private constructor for building a Device from a raw udev_device.
+         * @param device
+         */
+        Device(udev_device * device);
+
         /**
          * @brief method to help with the udev library functions that all return
          * key/value pairs.
