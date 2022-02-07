@@ -25,8 +25,35 @@ SOFTWARE.
 
 ******************************************************************************/
 
-#include "tfautofiledescriptor.hpp"
-#include "tfexceptions.hpp"
-#include "tffileobserver.hpp"
-#include "tfmounttable.hpp"
-#include "tfudev.hpp"
+#ifndef TFMOUNTTABLE_HPP
+#define TFMOUNTTABLE_HPP
+
+#include <vector>
+#include "TFFoundation.hpp"
+
+using namespace TF::Foundation;
+
+namespace TF::Linux
+{
+
+    struct MountTableEntry
+    {
+        using string_type = String;
+
+        string_type file_system_name;
+        string_type directory;
+        string_type type;
+        string_type options;
+        int frequency;
+        int pass_number;
+
+        MountTableEntry() : file_system_name{}, directory{}, type{}, options{}, frequency{0}, pass_number{0} {}
+    };
+
+    using MountTable = std::vector<MountTableEntry>;
+
+    MountTable load_mount_table();
+
+} // namespace TF::Linux
+
+#endif // TFMOUNTTABLE_HPP

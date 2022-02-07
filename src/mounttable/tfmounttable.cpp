@@ -25,8 +25,52 @@ SOFTWARE.
 
 ******************************************************************************/
 
-#include "tfautofiledescriptor.hpp"
-#include "tfexceptions.hpp"
-#include "tffileobserver.hpp"
+#include <cstdio>
+#include <mntent.h>
 #include "tfmounttable.hpp"
-#include "tfudev.hpp"
+
+namespace TF::Linux
+{
+
+    MountTable load_mount_table()
+    {
+        MountTable table{};
+        struct mntent * entry;
+
+        auto handle = setmntent("/proc/mounts", "r");
+        if (handle == nullptr)
+        {
+            throw std::system_error{errno, std::system_category()};
+        }
+
+        while ((entry = getmntent(handle)) != nullptr)
+        {
+            MountTableEntry table_entry{};
+            if (entry->mnt_fsname)
+            {
+                table_entry.file_system_name = entry->mnt_fsname;
+            }
+
+            if (entry->mnt_dir)
+            {
+                table_entry.directory = entry->mnt_dir;
+            }
+
+            if (entry->mnt_type)
+            {
+                table_entry.type = entry->mnt_type;
+            }
+
+            if (entry->mnt_opts)
+            {
+                table_entry.options = entry->mnt_opts;
+            }
+
+            table_entry.frequency = entry->mnt_freq;
+            table_entry.pass_number = entry->mnt_passno;
+
+            table.emplace_back(table_entry);
+        }
+        return table;
+    }
+} // namespace TF::Linux
