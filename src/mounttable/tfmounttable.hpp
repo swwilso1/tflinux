@@ -48,6 +48,8 @@ namespace TF::Linux
         int pass_number;
 
         MountTableEntry() : file_system_name{}, directory{}, type{}, options{}, frequency{0}, pass_number{0} {}
+
+        bool operator==(const MountTableEntry & e) const;
     };
 
     using MountTable = std::vector<MountTableEntry>;

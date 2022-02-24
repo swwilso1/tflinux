@@ -31,6 +31,16 @@ SOFTWARE.
 
 namespace TF::Linux
 {
+    bool MountTableEntry::operator==(const MountTableEntry & e) const
+    {
+        if (this == &e)
+        {
+            return true;
+        }
+
+        return file_system_name == e.file_system_name && directory == e.directory && type == e.type &&
+               options == e.options && frequency == e.frequency && pass_number == e.pass_number;
+    }
 
     MountTable load_mount_table()
     {
@@ -73,4 +83,5 @@ namespace TF::Linux
         }
         return table;
     }
+
 } // namespace TF::Linux
