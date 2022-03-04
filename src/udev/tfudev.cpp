@@ -65,8 +65,8 @@ namespace TF::Linux::Udev
 
     Device::Device(Device && d) : m_device{}
     {
-        d.retain();
         m_device = d.m_device;
+        d.m_device = nullptr;
     }
 
     Device::Device(const context_type & ctx, const string_type & path) : m_device{nullptr}
@@ -112,7 +112,10 @@ namespace TF::Linux::Udev
 
     Device::~Device()
     {
-        udev_device_unref(m_device);
+        if (m_device)
+        {
+            udev_device_unref(m_device);
+        }
         m_device = reinterpret_cast<decltype(m_device)>(0xdeadbeef);
     }
 
@@ -136,9 +139,8 @@ namespace TF::Linux::Udev
             return *this;
         }
 
-        d.retain();
-        release();
         m_device = d.m_device;
+        d.m_device = nullptr;
         return *this;
     }
 
@@ -471,6 +473,7 @@ namespace TF::Linux::Udev
             try
             {
                 read_handle = FileHandle::fileHandleForReadingAtPath(full_path_to_item);
+                read_handle.setAutoClose(true);
                 data = read_handle.readAvailableData();
             }
             catch (std::runtime_error & e)
