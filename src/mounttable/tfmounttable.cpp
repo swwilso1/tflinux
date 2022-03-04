@@ -81,6 +81,8 @@ namespace TF::Linux
 
             table.emplace_back(table_entry);
         }
+
+        fclose(handle);
         return table;
     }
 
