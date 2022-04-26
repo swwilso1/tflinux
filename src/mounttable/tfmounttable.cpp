@@ -50,7 +50,9 @@ namespace TF::Linux
         auto handle = setmntent("/proc/mounts", "r");
         if (handle == nullptr)
         {
-            throw std::system_error{errno, std::system_category()};
+            auto & error_category = std::system_category();
+            LOG(LogPriority::Error, "Failed to load mount table: %s", error_category.message(errno));
+            return table;
         }
 
         while ((entry = getmntent(handle)) != nullptr)
