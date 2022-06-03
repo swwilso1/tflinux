@@ -274,14 +274,12 @@ namespace TF::Linux::Udev
 
     std::optional<Device> Device::get_parent()
     {
-        udev_device_ref(m_device);
         auto parent_device = udev_device_get_parent(m_device);
         if (parent_device)
         {
             udev_device_ref(parent_device);
             return std::optional<Device>{Device{parent_device}};
         }
-        udev_device_unref(m_device);
         return std::optional<Device>{};
     }
 
