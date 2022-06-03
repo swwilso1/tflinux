@@ -5,6 +5,8 @@
 #####
 ################################################################################
 
-include(tests/cmake/config.cmake)
-include(tests/udev/config.cmake)
-
+build_and_run_test(
+        udev_test
+        UdevTest
+        tests/udev/udev_tests.cpp
+)

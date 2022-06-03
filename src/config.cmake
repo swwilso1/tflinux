@@ -39,6 +39,7 @@ endif()
 
 if (BUILD_SANITIZER)
     list(APPEND COMPILE_OPTIONS -fsanitize=address -fno-omit-frame-pointer)
+    set(SANITIZER_LIBRARY -fsanitize=address)
 endif()
 
 add_library(${SHARED_LIBRARY_NAME} SHARED ${LIBRARY_SOURCE_FILES} ${LIBRARY_HEADER_FILES})
@@ -49,10 +50,12 @@ target_include_directories(${SHARED_LIBRARY_NAME} INTERFACE
         $<INSTALL_INTERFACE:include/TFLinux>)
 target_link_libraries(${SHARED_LIBRARY_NAME} PRIVATE
         TFFoundation::TFFoundation-shared
-        udev)
+        udev
+        ${SANITIZER_LIBRARY})
 target_link_libraries(${SHARED_LIBRARY_NAME} INTERFACE
         TFFoundation::TFFoundation-shared
-        udev)
+        udev
+        ${SANITIZER_LIBRARY})
 add_dependencies(${SHARED_LIBRARY_NAME} LinuxHeaders)
 
 
@@ -64,10 +67,12 @@ target_include_directories(${STATIC_LIBRARY_NAME} INTERFACE
         $<INSTALL_INTERFACE:include/TFLinux>)
 target_link_libraries(${STATIC_LIBRARY_NAME} PRIVATE
         TFFoundation::TFFoundation-static
-        udev)
+        udev
+        ${SANITIZER_LIBRARY})
 target_link_libraries(${STATIC_LIBRARY_NAME} INTERFACE
         TFFoundation::TFFoundation-static
-        udev)
+        udev
+        ${SANITIZER_LIBRARY})
 add_dependencies(${STATIC_LIBRARY_NAME} LinuxHeaders)
 
 install(TARGETS ${SHARED_LIBRARY_NAME}
