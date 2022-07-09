@@ -34,7 +34,7 @@ list(APPEND COMPILE_OPTIONS -Wall -Wextra -Wconversion -Wsign-conversion)
 #list(APPEND COMPILE_FLAGS -Werror -pedantic-errors)
 
 if(BUILD_PROFILE)
-    list(APPEND COMPILE_OPTIONS -pg)
+    list(APPEND COMPILE_OPTIONS -pg -fno-omit-frame-pointer)
 endif()
 
 if (BUILD_SANITIZER)
