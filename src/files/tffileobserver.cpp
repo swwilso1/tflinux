@@ -120,13 +120,13 @@ namespace TF::Linux
 
         // Read any pending signals from the signal pipe.
         char buffer[1024];
-        (void)read(m_pipe_fd[0], buffer, sizeof(buffer));
+        (void)!read(m_pipe_fd[0], buffer, sizeof(buffer));
     }
 
     void FileObserver::stop()
     {
         char signal_value = '1';
-        (void)write(m_pipe_fd[1], &signal_value, sizeof(signal_value));
+        (void)!write(m_pipe_fd[1], &signal_value, sizeof(signal_value));
     }
 
 } // namespace TF::Linux
