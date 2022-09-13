@@ -29,4 +29,5 @@ SOFTWARE.
 #include "tfexceptions.hpp"
 #include "tffileobserver.hpp"
 #include "tfmounttable.hpp"
+#include "tfsystemdservice.hpp"
 #include "tfudev.hpp"

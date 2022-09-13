@@ -9,6 +9,7 @@ include(src/exceptions/config.cmake)
 include(src/files/config.cmake)
 include(src/include/config.cmake)
 include(src/mounttable/config.cmake)
+include(src/systemd/config.cmake)
 include(src/udev/config.cmake)
 
 include_directories(
@@ -16,6 +17,7 @@ include_directories(
     src/files
     src/include
     src/mounttable
+    src/systemd
     src/udev
 )
 
