@@ -32,8 +32,7 @@ add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/headers/${LIBRARY_NAME}/up
 
 add_custom_target(LinuxHeaders DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/headers/${LIBRARY_NAME}/updated)
 
-list(APPEND COMPILE_OPTIONS -Wall -Wextra -Wconversion -Wsign-conversion)
-#list(APPEND COMPILE_FLAGS -Werror -pedantic-errors)
+list(APPEND COMPILE_OPTIONS -Wall -Wextra -Wconversion -Wsign-conversion -fsigned-char)
 
 if(BUILD_PROFILE)
     list(APPEND COMPILE_OPTIONS -pg -fno-omit-frame-pointer)
