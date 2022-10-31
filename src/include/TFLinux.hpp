@@ -28,6 +28,8 @@ SOFTWARE.
 #include "tfautofiledescriptor.hpp"
 #include "tfexceptions.hpp"
 #include "tffileobserver.hpp"
+#include "tffilesystems.hpp"
+#include "tfmounter.hpp"
 #include "tfmounttable.hpp"
 #include "tfsystemdservice.hpp"
 #include "tfudev.hpp"
