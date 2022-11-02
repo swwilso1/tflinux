@@ -29,6 +29,7 @@ SOFTWARE.
 #include "tfexceptions.hpp"
 #include "tffileobserver.hpp"
 #include "tffilesystems.hpp"
+#include "tfitemcopier.hpp"
 #include "tfmounter.hpp"
 #include "tfmounttable.hpp"
 #include "tfsystemdservice.hpp"
