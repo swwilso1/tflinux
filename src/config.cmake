@@ -21,6 +21,7 @@ include_directories(
     src/include
     src/systemd
     src/udev
+    ${GENERATED_SOURCES_DIR}
 )
 
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/headers/${LIBRARY_NAME})

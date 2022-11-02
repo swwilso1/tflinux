@@ -25,6 +25,7 @@ SOFTWARE.
 
 ******************************************************************************/
 
+#include "tfconfigure.hpp"
 #include "tfudev.hpp"
 #include "tfexceptions.hpp"
 
@@ -171,7 +172,11 @@ namespace TF::Linux::Udev
 
     Device::string_map_type Device::get_current_tags() const
     {
+#if defined(HAVE_UDEV_DEVICE_GET_CURRENT_TAGS_LIST_ENTRY)
         return get_values(udev_device_get_current_tags_list_entry);
+#else
+        return {};
+#endif
     }
 
     Device::string_map_type Device::get_system_attributes() const

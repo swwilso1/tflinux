@@ -7,6 +7,10 @@
 
 set(CMAKE_CXX_STANDARD 20)
 
+set(GENERATED_SOURCES_DIR "${CMAKE_CURRENT_BINARY_DIR}/generated_sources" CACHE STRING "Name of generated source directory")
+
+include(cmake/platform_tests.cmake)
+
 include(cmake/conan.cmake)
 
 option(CONAN_BUILD_ALL "Require conan install to rebuild from source packages" OFF)
