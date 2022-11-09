@@ -5,7 +5,6 @@
 #####
 ################################################################################
 
-include(src/copy/config.cmake)
 include(src/exceptions/config.cmake)
 include(src/files/config.cmake)
 include(src/filesystems/config.cmake)
@@ -14,7 +13,6 @@ include(src/systemd/config.cmake)
 include(src/udev/config.cmake)
 
 include_directories(
-    src/copy
     src/exceptions
     src/files
     src/filesystems
