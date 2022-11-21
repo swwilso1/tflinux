@@ -36,7 +36,7 @@ namespace TF::Linux
         return o;
     }
 
-    auto stringToFileSystem(const TF::Foundation::String & s) -> FileSystem
+    auto stringToFileSystemType(const TF::Foundation::String & s) -> FileSystem
     {
         auto lower_case_s = s.lowercaseString();
         if (lower_case_s == "vfat" || lower_case_s == "fat32")
