@@ -2,7 +2,7 @@
 
 Tectiform Open Source License (TOS)
 
-Copyright (c) 2022 to 2022 Tectiform Inc.
+Copyright (c) 2023 to 2023 Tectiform Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -25,14 +25,34 @@ SOFTWARE.
 
 ******************************************************************************/
 
-#include "tfautofiledescriptor.hpp"
-#include "tfexceptions.hpp"
-#include "tffileobserver.hpp"
-#include "tffilesystems.hpp"
-#include "tfitemcopier.hpp"
-#include "tfmounter.hpp"
-#include "tfmounttable.hpp"
+#ifndef TFSERVICECONFIGURATION_HPP
+#define TFSERVICECONFIGURATION_HPP
+
+#include <vector>
+#include "TFFoundation.hpp"
 #include "tfnetworkconfiguration.hpp"
-#include "tfnetworkmanager.hpp"
-#include "tfsystemdservice.hpp"
-#include "tfudev.hpp"
+
+namespace TF::Linux
+{
+
+    class ServiceConfiguration
+    {
+    public:
+        using string_type = String;
+        using ethernet_configuration_list = std::vector<EthernetConfiguration>;
+        using wireless_configuration_list = std::vector<WirelessConfiguration>;
+
+        ServiceConfiguration() = default;
+        virtual ~ServiceConfiguration() = default;
+
+        virtual auto load_configurations_from_file(const string_type & file)
+            -> std::pair<wireless_configuration_list, ethernet_configuration_list> = 0;
+
+        virtual void write_configurations_to_file(const wireless_configuration_list & wireless_list,
+                                                  const ethernet_configuration_list & ethernet_list,
+                                                  const string_type & file) = 0;
+    };
+
+} // namespace TF::Linux
+
+#endif // TFSERVICECONFIGURATION_HPP

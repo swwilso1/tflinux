@@ -9,6 +9,7 @@ include(src/exceptions/config.cmake)
 include(src/files/config.cmake)
 include(src/filesystems/config.cmake)
 include(src/include/config.cmake)
+include(src/network_management/config.cmake)
 include(src/systemd/config.cmake)
 include(src/udev/config.cmake)
 
@@ -17,9 +18,11 @@ include_directories(
     src/files
     src/filesystems
     src/include
+    src/network_management
     src/systemd
     src/udev
     ${GENERATED_SOURCES_DIR}
+    ${ANTLR_RUNTIME_INSTALL_DIR}/include/antlr4-runtime
 )
 
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/headers/${LIBRARY_NAME})
@@ -33,7 +36,7 @@ add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/headers/${LIBRARY_NAME}/up
 
 add_custom_target(LinuxHeaders DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/headers/${LIBRARY_NAME}/updated)
 
-list(APPEND COMPILE_OPTIONS -Wall -Wextra -Wconversion -Wsign-conversion -fsigned-char)
+list(APPEND COMPILE_OPTIONS -Wall -Wextra -Wconversion -Wsign-conversion -fsigned-char -Wno-unknown-pragmas)
 
 if(BUILD_PROFILE)
     list(APPEND COMPILE_OPTIONS -pg -fno-omit-frame-pointer)
@@ -52,10 +55,12 @@ target_include_directories(${SHARED_LIBRARY_NAME} INTERFACE
         $<INSTALL_INTERFACE:include/TFLinux>)
 target_link_libraries(${SHARED_LIBRARY_NAME} PRIVATE
         TFFoundation::TFFoundation-shared
+        CONAN_PKG::yaml-cpp
         udev
         ${SANITIZER_LIBRARY})
 target_link_libraries(${SHARED_LIBRARY_NAME} INTERFACE
         TFFoundation::TFFoundation-shared
+        CONAN_PKG::yaml-cpp
         udev
         ${SANITIZER_LIBRARY})
 add_dependencies(${SHARED_LIBRARY_NAME} LinuxHeaders)
@@ -69,10 +74,12 @@ target_include_directories(${STATIC_LIBRARY_NAME} INTERFACE
         $<INSTALL_INTERFACE:include/TFLinux>)
 target_link_libraries(${STATIC_LIBRARY_NAME} PRIVATE
         TFFoundation::TFFoundation-static
+        CONAN_PKG::yaml-cpp
         udev
         ${SANITIZER_LIBRARY})
 target_link_libraries(${STATIC_LIBRARY_NAME} INTERFACE
         TFFoundation::TFFoundation-static
+        CONAN_PKG::yaml-cpp
         udev
         ${SANITIZER_LIBRARY})
 add_dependencies(${STATIC_LIBRARY_NAME} LinuxHeaders)

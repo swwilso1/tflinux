@@ -25,14 +25,45 @@ SOFTWARE.
 
 ******************************************************************************/
 
-#include "tfautofiledescriptor.hpp"
-#include "tfexceptions.hpp"
-#include "tffileobserver.hpp"
-#include "tffilesystems.hpp"
-#include "tfitemcopier.hpp"
-#include "tfmounter.hpp"
-#include "tfmounttable.hpp"
-#include "tfnetworkconfiguration.hpp"
-#include "tfnetworkmanager.hpp"
-#include "tfsystemdservice.hpp"
-#include "tfudev.hpp"
+#ifndef TFSYSTEMNETWORKINTERFACE_HPP
+#define TFSYSTEMNETWORKINTERFACE_HPP
+
+#include "TFFoundation.hpp"
+
+using namespace TF::Foundation;
+
+namespace TF::Linux
+{
+
+    class SystemNetworkInterface : public NetworkInterface
+    {
+    public:
+        SystemNetworkInterface();
+        explicit SystemNetworkInterface(const NetworkInterface & interface);
+
+        SystemNetworkInterface & operator=(const NetworkInterface & interface);
+
+        void add_nameserver_address(const address_type & address);
+
+        [[nodiscard]] auto get_nameservers() const -> address_list_type;
+
+        void add_gateway_address(const address_type & address);
+
+        [[nodiscard]] auto get_gateways() const -> address_list_type;
+
+        void clear();
+
+        void clear_gateways();
+
+        void clear_nameservers();
+
+    private:
+        using base_type = NetworkInterface;
+
+        address_list_type m_nameserver_addresses{};
+        address_list_type m_gateway_addresses{};
+    };
+
+} // namespace TF::Linux
+
+#endif // TFSYSTEMNETWORKINTERFACE_HPP

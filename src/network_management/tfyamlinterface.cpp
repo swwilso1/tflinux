@@ -25,14 +25,16 @@ SOFTWARE.
 
 ******************************************************************************/
 
-#include "tfautofiledescriptor.hpp"
-#include "tfexceptions.hpp"
-#include "tffileobserver.hpp"
-#include "tffilesystems.hpp"
-#include "tfitemcopier.hpp"
-#include "tfmounter.hpp"
-#include "tfmounttable.hpp"
-#include "tfnetworkconfiguration.hpp"
-#include "tfnetworkmanager.hpp"
-#include "tfsystemdservice.hpp"
-#include "tfudev.hpp"
+#include "tfyamlinterface.hpp"
+
+namespace TF::Linux
+{
+
+    YAML::Emitter & operator<<(YAML::Emitter & emitter, const String & s)
+    {
+        auto stl_s = s.stlString();
+        emitter << stl_s;
+        return emitter;
+    }
+
+} // namespace TF::Linux

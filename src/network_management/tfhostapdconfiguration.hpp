@@ -2,7 +2,7 @@
 
 Tectiform Open Source License (TOS)
 
-Copyright (c) 2022 to 2022 Tectiform Inc.
+Copyright (c) 2023 to 2023 Tectiform Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -25,14 +25,29 @@ SOFTWARE.
 
 ******************************************************************************/
 
-#include "tfautofiledescriptor.hpp"
-#include "tfexceptions.hpp"
-#include "tffileobserver.hpp"
-#include "tffilesystems.hpp"
-#include "tfitemcopier.hpp"
-#include "tfmounter.hpp"
-#include "tfmounttable.hpp"
-#include "tfnetworkconfiguration.hpp"
-#include "tfnetworkmanager.hpp"
-#include "tfsystemdservice.hpp"
-#include "tfudev.hpp"
+#ifndef TFHOSTAPDCONFIGURATION_HPP
+#define TFHOSTAPDCONFIGURATION_HPP
+
+#include "TFFoundation.hpp"
+#include "tfserviceconfiguration.hpp"
+#include "tfkeyvalueconfigfile.hpp"
+
+namespace TF::Linux
+{
+
+    class HostapdConfiguration : public ServiceConfiguration
+    {
+    public:
+        HostapdConfiguration() = default;
+
+        auto load_configurations_from_file(const string_type & file)
+            -> std::pair<wireless_configuration_list, ethernet_configuration_list> override;
+
+        void write_configurations_to_file(const wireless_configuration_list & wireless_list,
+                                          const ethernet_configuration_list & ethernet_list,
+                                          const string_type & file) override;
+    };
+
+} // namespace TF::Linux
+
+#endif // TFHOSTAPDCONFIGURATION_HPP

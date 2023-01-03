@@ -1,0 +1,170 @@
+/******************************************************************************
+
+Tectiform Open Source License (TOS)
+
+Copyright (c) 2022 to 2022 Tectiform Inc.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+
+******************************************************************************/
+
+#include "tfnetworkconfiguration.hpp"
+
+namespace TF::Linux
+{
+    void NetworkConfiguration::clear()
+    {
+        addr_mode = address_mode::NONE;
+        interface.clear();
+        enabled = false;
+    }
+
+    auto NetworkConfiguration::get_name() const -> string_type
+    {
+        return interface.get_name();
+    }
+
+    void NetworkConfiguration::update_from(const NetworkConfiguration & config)
+    {
+        addr_mode = config.addr_mode;
+        interface = config.interface;
+        enabled = config.enabled;
+    }
+
+    void NetworkConfiguration::update_all_but_interface_from(const NetworkConfiguration & config)
+    {
+        addr_mode = config.addr_mode;
+        enabled = config.enabled;
+    }
+
+    std::ostream & operator<<(std::ostream & o, const NetworkConfiguration::InterfaceAddressMode & addr_mode)
+    {
+        switch (addr_mode)
+        {
+            case NetworkConfiguration::InterfaceAddressMode::DHCP:
+                o << "DHCP";
+                break;
+            case NetworkConfiguration::InterfaceAddressMode::STATIC:
+                o << "STATIC";
+                break;
+            case NetworkConfiguration::InterfaceAddressMode::NONE:
+                o << "NONE";
+                break;
+        }
+
+        return o;
+    }
+
+    void WirelessConfiguration::clear()
+    {
+        NetworkConfiguration::clear();
+        channel = 0;
+        mode = wifi_mode::NONE;
+        standard = wifi_standard::NONE;
+        ssid = string_type{};
+        password = string_type{};
+        wpa_mode = 0;
+        wpa_key_management = string_type{};
+        wpa_pairwise = string_type{};
+        rsn_pairwise = string_type{};
+        dhcp_start_address = address_type{};
+        dhcp_end_address = address_type{};
+    }
+
+    void WirelessConfiguration::update_from(const WirelessConfiguration & config)
+    {
+        NetworkConfiguration::update_from(config);
+        update_non_interface_details_from(config);
+    }
+
+    void WirelessConfiguration::update_all_but_interface_from(const WirelessConfiguration & config)
+    {
+        NetworkConfiguration::update_all_but_interface_from(config);
+        update_non_interface_details_from(config);
+    }
+
+    void WirelessConfiguration::update_from(const NetworkConfiguration & config)
+    {
+        NetworkConfiguration::update_from(config);
+    }
+
+    void WirelessConfiguration::update_all_but_interface_from(const NetworkConfiguration & config)
+    {
+        NetworkConfiguration::update_all_but_interface_from(config);
+    }
+
+    void WirelessConfiguration::update_non_interface_details_from(const WirelessConfiguration & config)
+    {
+        channel = config.channel;
+        mode = config.mode;
+        standard = config.standard;
+        ssid = config.ssid;
+        password = config.password;
+        wpa_mode = config.wpa_mode;
+        wpa_key_management = config.wpa_key_management;
+        wpa_pairwise = config.wpa_pairwise;
+        rsn_pairwise = config.rsn_pairwise;
+        dhcp_start_address = config.dhcp_start_address;
+        dhcp_end_address = config.dhcp_end_address;
+    }
+
+    std::ostream & operator<<(std::ostream & o, const WirelessConfiguration::WifiMode & mode)
+    {
+        switch (mode)
+        {
+            case WirelessConfiguration::WifiMode::ACCESS_POINT:
+                o << "ACCESS_POINT";
+                break;
+            case WirelessConfiguration::WifiMode::CLIENT:
+                o << "CLIENT";
+                break;
+            case WirelessConfiguration::WifiMode::NONE:
+                o << "NONE";
+                break;
+        }
+
+        return o;
+    }
+
+    std::ostream & operator<<(std::ostream & o, const WirelessConfiguration::WifiStandard & standard)
+    {
+        switch (standard)
+        {
+            case WirelessConfiguration::WifiStandard::A:
+                o << "A";
+                break;
+            case WirelessConfiguration::WifiStandard::B:
+                o << "B";
+                break;
+            case WirelessConfiguration::WifiStandard::G:
+                o << "G";
+                break;
+            case WirelessConfiguration::WifiStandard::N:
+                o << "N";
+                break;
+            case WirelessConfiguration::WifiStandard::NONE:
+                o << "NONE";
+                break;
+        }
+
+        return o;
+    }
+
+} // namespace TF::Linux

@@ -15,6 +15,7 @@ include(cmake/conan.cmake)
 
 option(CONAN_BUILD_ALL "Require conan install to rebuild from source packages" OFF)
 
+list(APPEND CONAN_REQUIRES yaml-cpp/0.7.0)
 list(APPEND CONAN_REQUIRES gtest/1.11.0)
 if (CONAN_BUILD_ALL)
     set(CONAN_BUILD_ARG all)

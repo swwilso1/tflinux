@@ -2,7 +2,7 @@
 
 Tectiform Open Source License (TOS)
 
-Copyright (c) 2022 to 2022 Tectiform Inc.
+Copyright (c) 2023 to 2023 Tectiform Inc.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -25,14 +25,37 @@ SOFTWARE.
 
 ******************************************************************************/
 
-#include "tfautofiledescriptor.hpp"
-#include "tfexceptions.hpp"
-#include "tffileobserver.hpp"
-#include "tffilesystems.hpp"
-#include "tfitemcopier.hpp"
-#include "tfmounter.hpp"
-#include "tfmounttable.hpp"
+#ifndef TFDHCPCD_HPP
+#define TFDHCPCD_HPP
+
+#include <vector>
+#include "TFFoundation.hpp"
 #include "tfnetworkconfiguration.hpp"
-#include "tfnetworkmanager.hpp"
-#include "tfsystemdservice.hpp"
-#include "tfudev.hpp"
+
+namespace TF::Linux
+{
+
+    struct DHCPCD
+    {
+        bool rapid_commit{true};
+        bool domain_name{true};
+        bool domain_search{true};
+        bool classless_static_routes{true};
+        bool host_name{true};
+        bool interface_mtu{true};
+        bool domain_name_servers{true};
+        bool slaac_hwaddr{false};
+        bool slaac_private{true};
+        bool dhcp_server_identifier{true};
+        bool hostname{true};
+        bool clientid{true};
+        bool duid{false};
+        bool persistent{true};
+        std::vector<EthernetConfiguration> interfaces{};
+
+        DHCPCD() = default;
+    };
+
+} // namespace TF::Linux
+
+#endif // TFDHCPCD_HPP
