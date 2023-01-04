@@ -32,6 +32,7 @@ SOFTWARE.
 #include <vector>
 #include <unordered_map>
 #include <functional>
+#include <optional>
 #include "TFFoundation.hpp"
 #include "tfnetworkconfiguration.hpp"
 
@@ -72,13 +73,15 @@ namespace TF::Linux
 
         [[nodiscard]] auto get_ethernet_configuration_names() const -> std::vector<string_type>;
 
-        [[nodiscard]] auto get_primary_wifi_configuration_name() const -> string_type;
+        [[nodiscard]] auto get_primary_wifi_configuration_name() const -> std::optional<string_type>;
 
-        [[nodiscard]] auto get_primary_ethernet_configuration_name() const -> string_type;
+        [[nodiscard]] auto get_primary_ethernet_configuration_name() const -> std::optional<string_type>;
 
-        [[nodiscard]] auto get_wifi_configuration_for_name(const string_type & name) -> WirelessConfiguration;
+        [[nodiscard]] auto get_wifi_configuration_for_name(const string_type & name)
+            -> std::optional<WirelessConfiguration>;
 
-        [[nodiscard]] auto get_ethernet_configuration_for_name(const string_type & name) -> EthernetConfiguration;
+        [[nodiscard]] auto get_ethernet_configuration_for_name(const string_type & name)
+            -> std::optional<EthernetConfiguration>;
 
 #pragma mark - methods to set interface information
 

@@ -98,48 +98,48 @@ namespace TF::Linux
         return names;
     }
 
-    auto NetworkManager::get_primary_wifi_configuration_name() const -> string_type
+    auto NetworkManager::get_primary_wifi_configuration_name() const -> std::optional<string_type>
     {
         for (auto & pair : m_wifi_configurations)
         {
             if (pair.second.interface.has_ipv4_address())
             {
-                return pair.second.interface.get_name();
+                return {pair.second.interface.get_name()};
             }
         }
-
-        throw std::runtime_error{"Unable to find suitable wifi configuration"};
+        return {};
     }
 
-    auto NetworkManager::get_primary_ethernet_configuration_name() const -> string_type
+    auto NetworkManager::get_primary_ethernet_configuration_name() const -> std::optional<string_type>
     {
         for (auto & pair : m_ethernet_configurations)
         {
             if (pair.second.interface.has_ipv4_address())
             {
-                return pair.second.interface.get_name();
+                return {pair.second.interface.get_name()};
             }
         }
-
-        throw std::runtime_error{"Unable to find suitable ethernet configuration"};
+        return {};
     }
 
-    auto NetworkManager::get_wifi_configuration_for_name(const string_type & name) -> WirelessConfiguration
+    auto NetworkManager::get_wifi_configuration_for_name(const string_type & name)
+        -> std::optional<WirelessConfiguration>
     {
         if (! m_wifi_configurations.contains(name))
         {
-            throw std::invalid_argument{"No configuration for the given name"};
+            return {};
         }
-        return m_wifi_configurations[name];
+        return {m_wifi_configurations[name]};
     }
 
-    auto NetworkManager::get_ethernet_configuration_for_name(const string_type & name) -> EthernetConfiguration
+    auto NetworkManager::get_ethernet_configuration_for_name(const string_type & name)
+        -> std::optional<EthernetConfiguration>
     {
         if (! m_ethernet_configurations.contains(name))
         {
-            throw std::invalid_argument{"No configuration for the given name"};
+            return {};
         }
-        return m_ethernet_configurations[name];
+        return {m_ethernet_configurations[name]};
     }
 
     void NetworkManager::set_wifi_configuration_for_name(const string_type & name, const WirelessConfiguration & config)
