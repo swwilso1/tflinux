@@ -67,6 +67,7 @@ namespace TF::Linux
     };
 
     std::ostream & operator<<(std::ostream & o, const NetworkConfiguration::InterfaceAddressMode & addr_mode);
+    std::ostream & operator<<(std::ostream & o, const NetworkConfiguration & c);
 
     struct WirelessConfiguration : public NetworkConfiguration
     {
@@ -114,6 +115,7 @@ namespace TF::Linux
 
     std::ostream & operator<<(std::ostream & o, const WirelessConfiguration::WifiMode & mode);
     std::ostream & operator<<(std::ostream & o, const WirelessConfiguration::WifiStandard & standard);
+    std::ostream & operator<<(std::ostream & o, const WirelessConfiguration & c);
 
     using EthernetConfiguration = NetworkConfiguration;
 } // namespace TF::Linux

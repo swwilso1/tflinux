@@ -72,6 +72,21 @@ namespace TF::Linux
         return o;
     }
 
+    std::ostream & operator<<(std::ostream & o, const NetworkConfiguration & c)
+    {
+        ClassFormatter * formatter = FormatterFactory::getFormatter();
+        if (formatter != nullptr)
+        {
+            formatter->setClassName("NetworkConfiguration");
+            formatter->addClassMember("address_mode", "addr_mode", c.addr_mode);
+            formatter->addClassMember("network_interface", "interface", c.interface);
+            formatter->addClassMember<bool>("bool", "enabled", c.enabled);
+            o << *formatter;
+            delete formatter;
+        }
+        return o;
+    }
+
     void WirelessConfiguration::clear()
     {
         NetworkConfiguration::clear();
@@ -164,6 +179,32 @@ namespace TF::Linux
                 break;
         }
 
+        return o;
+    }
+
+    std::ostream & operator<<(std::ostream & o, const WirelessConfiguration & c)
+    {
+        ClassFormatter * formatter = FormatterFactory::getFormatter();
+        if (formatter != nullptr)
+        {
+            formatter->setClassName("WirelessConfiguration");
+            formatter->addClassMember("address_mode", "addr_mode", c.addr_mode);
+            formatter->addClassMember("network_interface", "interface", c.interface);
+            formatter->addClassMember<bool>("bool", "enabled", c.enabled);
+            formatter->addClassMember<int32_t>("int32_t", "channel", c.channel);
+            formatter->addClassMember("wifi_mode", "mode", c.mode);
+            formatter->addClassMember("wifi_standard", "standard", c.standard);
+            formatter->addClassMember("string_type", "ssid", c.ssid);
+            formatter->addClassMember("string_type", "password", c.password);
+            formatter->addClassMember<int>("int", "wpa_mode", c.wpa_mode);
+            formatter->addClassMember("string_type", "wpa_key_management", c.wpa_key_management);
+            formatter->addClassMember("string_type", "wpa_pairwise", c.wpa_pairwise);
+            formatter->addClassMember("string_type", "rsn_pairwise", c.rsn_pairwise);
+            formatter->addClassMember("address_type", "dhcp_start_address", c.dhcp_start_address);
+            formatter->addClassMember("address_type", "dhcp_end_address", c.dhcp_end_address);
+            o << *formatter;
+            delete formatter;
+        }
         return o;
     }
 
