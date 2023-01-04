@@ -153,6 +153,26 @@ namespace TF::Linux
         m_ethernet_configurations[name] = config;
     }
 
+    void NetworkManager::remove_wifi_configuration_for_name(const string_type & name)
+    {
+        m_wifi_configurations.erase(name);
+    }
+
+    void NetworkManager::remove_ethernet_configuration_for_name(const string_type & name)
+    {
+        m_ethernet_configurations.erase(name);
+    }
+
+    void NetworkManager::remove_wifi_configurations()
+    {
+        m_wifi_configurations.clear();
+    }
+
+    void NetworkManager::remove_ethernet_configurations()
+    {
+        m_ethernet_configurations.clear();
+    }
+
     void NetworkManager::load_settings_from_system()
     {
         FileManager manager{};

@@ -89,7 +89,17 @@ namespace TF::Linux
 
         void set_ethernet_configuration_for_name(const string_type & name, const EthernetConfiguration & config);
 
+        void remove_wifi_configuration_for_name(const string_type & name);
+
+        void remove_ethernet_configuration_for_name(const string_type & name);
+
+        void remove_wifi_configurations();
+
+        void remove_ethernet_configurations();
+
     private:
+#pragma mark - class private details
+
         using ethernet_configuration_map = std::unordered_map<string_type, EthernetConfiguration>;
         using wifi_configuration_map = std::unordered_map<string_type, WirelessConfiguration>;
 
