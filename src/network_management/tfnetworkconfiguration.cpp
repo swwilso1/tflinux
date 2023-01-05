@@ -45,13 +45,21 @@ namespace TF::Linux
     {
         addr_mode = config.addr_mode;
         interface = config.interface;
-        enabled = config.enabled;
+	// If the interface is already enabled we probably do not want to disable it
+	// when we have a config with a different enabled setting.  We use configs
+	// that only have partial data and the new config might not have full enabled
+	// information.
+        enabled = enabled ? enabled : config.enabled;
     }
 
     void NetworkConfiguration::update_all_but_interface_from(const NetworkConfiguration & config)
     {
         addr_mode = config.addr_mode;
-        enabled = config.enabled;
+	// If the interface is already enabled we probably do not want to disable it
+	// when we have a config with a different enabled setting.  We use configs
+	// that only have partial data and the new config might not have full enabled
+	// information.
+        enabled = enabled ? enabled : config.enabled;
     }
 
     std::ostream & operator<<(std::ostream & o, const NetworkConfiguration::InterfaceAddressMode & addr_mode)
