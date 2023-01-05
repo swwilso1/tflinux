@@ -77,7 +77,7 @@ namespace TF::Linux
                             if (key == "dhcp4")
                             {
                                 auto value = inner_map_iter->second.as<std::string>();
-                                if (value == true)
+                                if (value == "true")
                                 {
                                     ethernet_config.addr_mode = NetworkConfiguration::address_mode::DHCP;
                                 }
@@ -166,28 +166,60 @@ namespace TF::Linux
                 }
             }
 
+	    auto update_wireless_config_from_ethernet_config = [](WirelessConfiguration & wireless_config, const EthernetConfiguration & ethernet_config) {
+                wireless_config.addr_mode = ethernet_config.addr_mode;
+		auto addr_and_masks = ethernet_config.interface.get_addresses_and_netmasks();
+		for (auto & addr_mask : addr_and_masks)
+		{
+                    wireless_config.interface.add_address_and_netmask(addr_mask);
+		}
+
+                auto nameservers = ethernet_config.interface.get_nameservers();
+                for (auto & nameserver : nameservers)
+                {
+                    wireless_config.interface.add_nameserver_address(nameserver);
+                }
+	    };
+
             for (auto & wireless_config : wireless_list)
             {
                 auto wireless_name = wireless_config.interface.get_name();
                 if (ethernet_map.contains(wireless_name))
                 {
                     auto & ethernet_config = ethernet_map[wireless_name];
-                    wireless_config.addr_mode = ethernet_config.addr_mode;
-                    auto addr_and_masks = ethernet_config.interface.get_addresses_and_netmasks();
-                    for (auto & addr_mask : addr_and_masks)
-                    {
-                        wireless_config.interface.add_address_and_netmask(addr_mask);
-                    }
-
-                    auto nameservers = ethernet_config.interface.get_nameservers();
-                    for (auto & nameserver : nameservers)
-                    {
-                        wireless_config.interface.add_nameserver_address(nameserver);
-                    }
-
+                    update_wireless_config_from_ethernet_config(wireless_config, ethernet_config);
                     ethernet_map.erase(wireless_name);
                 }
             }
+
+	    // It is possible to have loaded a wireless interface as an ethernet interface
+	    // if the interface is in static mode.  To catch that case, we troll through
+	    // the ethernet interfaces and see if they match wifi interfaces from a
+	    // NetworkInterfaces object.
+	    NetworkInterfaces interfaces{};
+	    interfaces.load_interfaces();
+
+	    std::vector<String> interface_names{};
+	    for (auto & pair : ethernet_map)
+	    {
+		    interface_names.emplace_back(pair.first);
+	    }
+
+	    for (auto & ethernet_interface_name : interface_names)
+	    {
+		auto ethernet_interface = interfaces.get_interface_by_name(ethernet_interface_name);
+		if (ethernet_interface)
+		{
+		    if (ethernet_interface.value().is_wireless_interface())
+		    {
+			auto & ethernet_config = ethernet_map[ethernet_interface_name];
+			WirelessConfiguration wireless_config{};
+			wireless_config.update_from(ethernet_config);
+			wireless_list.emplace_back(wireless_config);
+			ethernet_map.erase(ethernet_interface_name);
+		    }
+		}
+	    }
 
             std::for_each(ethernet_map.cbegin(), ethernet_map.cend(),
                           [&ethernet_list](const std::pair<const String, EthernetConfiguration> pair) -> void {
