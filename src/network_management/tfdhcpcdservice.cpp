@@ -25,7 +25,7 @@ SOFTWARE.
 
 ******************************************************************************/
 
-#include "tfdhcpcdconfiguration.hpp"
+#include "tfdhcpcdservice.hpp"
 #include "ANTLRFileStream.h"
 #include "CommonTokenStream.h"
 #include "dhcpcdLexer.h"
@@ -37,11 +37,9 @@ using namespace TF::Linux::dhcpcd;
 
 namespace TF::Linux
 {
-    auto DHCPCDConfiguration::load_configurations_from_file(const string_type & file)
-        -> std::pair<wireless_configuration_list, ethernet_configuration_list>
+    void DHCPCDService::load_configurations_from_file(const string_type & file,
+                                                      network_configuration_map & configurations)
     {
-        wireless_configuration_list wireless_list{};
-        ethernet_configuration_list ethernet_list{};
         auto file_stl_string = file.stlString();
         ANTLRFileStream file_stream{};
         file_stream.loadFromFile(file_stl_string);
@@ -54,21 +52,26 @@ namespace TF::Linux
         visitor.visit(tree);
         m_configuration = visitor.get_configuration();
 
-        for (auto & interface : m_configuration.interfaces)
+        for (auto & configuration : m_configuration.configurations)
         {
-            ethernet_list.emplace_back(interface);
+            auto interface_name = configuration.interface.get_name();
+            if (! configurations.contains(configuration.interface.get_name()))
+            {
+                auto config = std::make_shared<NetworkConfiguration>();
+                *config = configuration;
+                configurations.insert(std::make_pair(interface_name, config));
+            }
+            else
+            {
+                auto config = configurations[interface_name];
+                *config = configuration;
+            }
         }
-
-        return {wireless_list, ethernet_list};
     }
 
-    void DHCPCDConfiguration::write_configurations_to_file(const wireless_configuration_list & wireless_list,
-                                                           const ethernet_configuration_list & ethernet_list,
-                                                           const string_type & file)
+    void DHCPCDService::write_configurations_to_file(const network_configuration_map & configurations,
+                                                     const string_type & file)
     {
-        // Ignore the wireless configuration list.
-        (void)wireless_list;
-
         auto config_file = FileHandle::fileHandleForWritingAtPath(file, true);
         if (m_configuration.hostname)
         {
@@ -155,14 +158,21 @@ namespace TF::Linux
             config_file.writeString("slaac hwaddr\n");
         }
 
-        auto write_configuration_to_file = [&config_file](const NetworkConfiguration & config) -> void {
-            if (config.enabled && config.addr_mode == NetworkConfiguration::address_mode::STATIC)
+        auto write_configuration_to_file =
+            [&config_file](const std::pair<string_type, std::shared_ptr<NetworkConfiguration>> & pair) -> void {
+            auto config = pair.second;
+            if (config->wifi_interface)
             {
-                auto interface_name = config.interface.get_name();
+                return;
+            }
+
+            if (config->enabled && config->addr_mode == NetworkConfiguration::address_mode::STATIC)
+            {
+                auto interface_name = config->interface.get_name();
                 auto interface_line = string_type::initWithFormat("interface %@\n", &interface_name);
                 config_file.writeString(interface_line);
 
-                for (auto & addr_mask : config.interface.get_addresses_and_netmasks())
+                for (auto & addr_mask : config->interface.get_addresses_and_netmasks())
                 {
                     string_type ip_address_string{};
                     auto address_in_cidr = addr_mask.get_as_cidr_notation();
@@ -200,17 +210,16 @@ namespace TF::Linux
                     }
                 };
 
-                auto gateways = config.interface.get_gateways();
+                auto gateways = config->interface.get_gateways();
                 write_address_list_to_file("static routers=", gateways);
 
-                auto nameservers = config.interface.get_nameservers();
+                auto nameservers = config->interface.get_nameservers();
                 write_address_list_to_file("static domain_name_servers=", nameservers);
 
                 config_file.writeString("\n");
             }
         };
 
-        std::for_each(ethernet_list.cbegin(), ethernet_list.cend(), write_configuration_to_file);
-        std::for_each(wireless_list.cbegin(), wireless_list.cend(), write_configuration_to_file);
+        std::for_each(configurations.cbegin(), configurations.cend(), write_configuration_to_file);
     }
 } // namespace TF::Linux

@@ -112,7 +112,7 @@ namespace TF::Linux
         using string_type = String;
 
         DHCPCD m_configuration{};
-        std::stack<EthernetConfiguration> m_ethernet_stack{};
+        std::stack<NetworkConfiguration> m_ethernet_stack{};
 
         auto add_address_and_netmask(const string_type & s) -> std::any;
     };

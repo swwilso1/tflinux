@@ -42,14 +42,14 @@ list(APPEND LIBRARY_HEADER_FILES
 
 list(APPEND LIBRARY_SOURCE_FILES
         src/network_management/tfdhcpcd.hpp
-        src/network_management/tfdhcpcdconfiguration.cpp
-        src/network_management/tfdhcpcdconfiguration.hpp
+        src/network_management/tfdhcpcdservice.cpp
+        src/network_management/tfdhcpcdservice.hpp
         src/network_management/tfdhcpcdvisitor.cpp
         src/network_management/tfdhcpcdvisitor.hpp
-        src/network_management/tfdnsmasqconfiguration.cpp
-        src/network_management/tfdnsmasqconfiguration.hpp
-        src/network_management/tfhostapdconfiguration.cpp
-        src/network_management/tfhostapdconfiguration.hpp
+        src/network_management/tfdnsmasqservice.cpp
+        src/network_management/tfdnsmasqservice.hpp
+        src/network_management/tfhostapdservice.cpp
+        src/network_management/tfhostapdservice.hpp
         src/network_management/tfkeyvalueconfigfile.cpp
         src/network_management/tfkeyvalueconfigfile.hpp
         src/network_management/tfnetworkconfiguration.cpp
@@ -58,7 +58,7 @@ list(APPEND LIBRARY_SOURCE_FILES
         src/network_management/tfnetplan.hpp
         src/network_management/tfnetworkmanager.cpp
         src/network_management/tfnetworkmanager.hpp
-        src/network_management/tfserviceconfiguration.hpp
+        src/network_management/tfnetworkservice.hpp
         src/network_management/tfsystemnetworkinterface.cpp
         src/network_management/tfsystemnetworkinterface.hpp
         src/network_management/tfyamlinterface.cpp

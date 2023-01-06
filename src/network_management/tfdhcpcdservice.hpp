@@ -25,34 +25,41 @@ SOFTWARE.
 
 ******************************************************************************/
 
-#ifndef TFSERVICECONFIGURATION_HPP
-#define TFSERVICECONFIGURATION_HPP
+#ifndef TFDHCPCDSERVICE_HPP
+#define TFDHCPCDSERVICE_HPP
 
-#include <vector>
 #include "TFFoundation.hpp"
-#include "tfnetworkconfiguration.hpp"
+#include "tfnetworkservice.hpp"
+#include "tfdhcpcd.hpp"
 
 namespace TF::Linux
 {
 
-    class ServiceConfiguration
+    class DHCPCDService : public NetworkService
     {
     public:
-        using string_type = String;
-        using ethernet_configuration_list = std::vector<EthernetConfiguration>;
-        using wireless_configuration_list = std::vector<WirelessConfiguration>;
+        DHCPCDService() : NetworkService() {}
 
-        ServiceConfiguration() = default;
-        virtual ~ServiceConfiguration() = default;
+        void load_configurations_from_file(const string_type & file,
+                                           network_configuration_map & configurations) override;
 
-        virtual auto load_configurations_from_file(const string_type & file)
-            -> std::pair<wireless_configuration_list, ethernet_configuration_list> = 0;
+        void write_configurations_to_file(const network_configuration_map & configurations,
+                                          const string_type & file) override;
 
-        virtual void write_configurations_to_file(const wireless_configuration_list & wireless_list,
-                                                  const ethernet_configuration_list & ethernet_list,
-                                                  const string_type & file) = 0;
+        auto get_dhcpcd_configuration() const -> DHCPCD
+        {
+            return m_configuration;
+        }
+
+        void set_dhcpcd_configuration(const DHCPCD & config)
+        {
+            m_configuration = config;
+        }
+
+    private:
+        DHCPCD m_configuration{};
     };
 
 } // namespace TF::Linux
 
-#endif // TFSERVICECONFIGURATION_HPP
+#endif // TFDHCPCDSERVICE_HPP

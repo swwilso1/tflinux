@@ -25,29 +25,28 @@ SOFTWARE.
 
 ******************************************************************************/
 
-#ifndef TFHOSTAPDCONFIGURATION_HPP
-#define TFHOSTAPDCONFIGURATION_HPP
+#ifndef TFHOSTAPDSERVICE_HPP
+#define TFHOSTAPDSERVICE_HPP
 
 #include "TFFoundation.hpp"
-#include "tfserviceconfiguration.hpp"
+#include "tfnetworkservice.hpp"
 #include "tfkeyvalueconfigfile.hpp"
 
 namespace TF::Linux
 {
 
-    class HostapdConfiguration : public ServiceConfiguration
+    class HostapdService : public NetworkService
     {
     public:
-        HostapdConfiguration() = default;
+        HostapdService() = default;
 
-        auto load_configurations_from_file(const string_type & file)
-            -> std::pair<wireless_configuration_list, ethernet_configuration_list> override;
+        void load_configurations_from_file(const string_type & file,
+                                           network_configuration_map & configurations) override;
 
-        void write_configurations_to_file(const wireless_configuration_list & wireless_list,
-                                          const ethernet_configuration_list & ethernet_list,
+        void write_configurations_to_file(const network_configuration_map & configurations,
                                           const string_type & file) override;
     };
 
 } // namespace TF::Linux
 
-#endif // TFHOSTAPDCONFIGURATION_HPP
+#endif // TFHOSTAPDSERVICE_HPP

@@ -53,9 +53,7 @@ namespace TF::Linux
 
         [[nodiscard]] auto is_ethernet_enabled() const -> bool;
 
-        [[nodiscard]] auto has_wifi_configuration_for_name(const string_type & name) const -> bool;
-
-        [[nodiscard]] auto has_ethernet_configuration_for_name(const string_type & name) const -> bool;
+        [[nodiscard]] auto has_configuration_for_name(const string_type & name) const -> bool;
 
 #pragma mark - methods to interact with OS
 
@@ -77,37 +75,22 @@ namespace TF::Linux
 
         [[nodiscard]] auto get_primary_ethernet_configuration_name() const -> std::optional<string_type>;
 
-        [[nodiscard]] auto get_wifi_configuration_for_name(const string_type & name)
-            -> std::optional<WirelessConfiguration>;
-
-        [[nodiscard]] auto get_ethernet_configuration_for_name(const string_type & name)
-            -> std::optional<EthernetConfiguration>;
+        [[nodiscard]] auto get_configuration_for_name(const string_type & name) -> std::optional<NetworkConfiguration>;
 
 #pragma mark - methods to set interface information
 
-        void set_wifi_configuration_for_name(const string_type & name, const WirelessConfiguration & config);
+        void set_configuration_for_name(const string_type & name, const NetworkConfiguration & config);
 
-        void set_ethernet_configuration_for_name(const string_type & name, const EthernetConfiguration & config);
+        void remove_configuration_for_name(const string_type & name);
 
-        void remove_wifi_configuration_for_name(const string_type & name);
-
-        void remove_ethernet_configuration_for_name(const string_type & name);
-
-        void remove_wifi_configurations();
-
-        void remove_ethernet_configurations();
+        void clear();
 
     private:
 #pragma mark - class private details
 
-        using ethernet_configuration_map = std::unordered_map<string_type, EthernetConfiguration>;
-        using wifi_configuration_map = std::unordered_map<string_type, WirelessConfiguration>;
+        using configuration_map = std::unordered_map<string_type, NetworkConfiguration>;
 
-        wifi_configuration_map m_wifi_configurations{};
-        ethernet_configuration_map m_ethernet_configurations{};
-
-        void update_wireless_configs_from_list(const std::vector<WirelessConfiguration> & configs);
-        void update_ethernet_configs_from_list(const std::vector<EthernetConfiguration> & configs);
+        configuration_map m_configuration_map{};
     };
 
 } // namespace TF::Linux

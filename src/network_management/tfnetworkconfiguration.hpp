@@ -45,32 +45,6 @@ namespace TF::Linux
             NONE,
         };
 
-        using address_mode = InterfaceAddressMode;
-
-        using string_type = String;
-        using address_type = IPAddress;
-        using address_and_netmask_type = IPAddressAndNetmask;
-        using network_interface = SystemNetworkInterface;
-
-        address_mode addr_mode{};
-        network_interface interface {};
-        bool enabled{false};
-
-        virtual ~NetworkConfiguration() = default;
-
-        virtual void clear();
-
-        [[nodiscard]] auto get_name() const -> string_type;
-
-        virtual void update_from(const NetworkConfiguration & config);
-        virtual void update_all_but_interface_from(const NetworkConfiguration & config);
-    };
-
-    std::ostream & operator<<(std::ostream & o, const NetworkConfiguration::InterfaceAddressMode & addr_mode);
-    std::ostream & operator<<(std::ostream & o, const NetworkConfiguration & c);
-
-    struct WirelessConfiguration : public NetworkConfiguration
-    {
         enum class WifiStandard
         {
             A,
@@ -87,9 +61,19 @@ namespace TF::Linux
             NONE,
         };
 
+        using address_mode = InterfaceAddressMode;
         using wifi_standard = WifiStandard;
         using wifi_mode = WifiMode;
 
+        using string_type = String;
+        using address_type = IPAddress;
+        using address_and_netmask_type = IPAddressAndNetmask;
+        using network_interface = SystemNetworkInterface;
+
+        address_mode addr_mode{};
+        network_interface interface {};
+        bool enabled{false};
+        bool wifi_interface{false};
         int32_t channel{0};
         wifi_mode mode{};
         wifi_standard standard{};
@@ -102,22 +86,16 @@ namespace TF::Linux
         address_type dhcp_start_address{};
         address_type dhcp_end_address{};
 
-        void clear() override;
-        void update_from(const WirelessConfiguration & config);
-        void update_all_but_interface_from(const WirelessConfiguration & config);
+        void clear();
 
-        void update_from(const NetworkConfiguration & config) override;
-        void update_all_but_interface_from(const NetworkConfiguration & config) override;
-
-    private:
-        void update_non_interface_details_from(const WirelessConfiguration & config);
+        [[nodiscard]] auto get_name() const -> string_type;
     };
 
-    std::ostream & operator<<(std::ostream & o, const WirelessConfiguration::WifiMode & mode);
-    std::ostream & operator<<(std::ostream & o, const WirelessConfiguration::WifiStandard & standard);
-    std::ostream & operator<<(std::ostream & o, const WirelessConfiguration & c);
+    std::ostream & operator<<(std::ostream & o, const NetworkConfiguration::InterfaceAddressMode & addr_mode);
+    std::ostream & operator<<(std::ostream & o, const NetworkConfiguration::WifiMode & mode);
+    std::ostream & operator<<(std::ostream & o, const NetworkConfiguration::WifiStandard & standard);
+    std::ostream & operator<<(std::ostream & o, const NetworkConfiguration & c);
 
-    using EthernetConfiguration = NetworkConfiguration;
 } // namespace TF::Linux
 
 #endif // TFNETWORKCONFIGURATION_HPP

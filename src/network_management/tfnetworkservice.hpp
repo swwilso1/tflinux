@@ -25,42 +25,34 @@ SOFTWARE.
 
 ******************************************************************************/
 
-#ifndef TFDHCPCDCONFIGURATION_HPP
-#define TFDHCPCDCONFIGURATION_HPP
+#ifndef TFNETWORKSERVICE_HPP
+#define TFNETWORKSERVICE_HPP
 
+#include <vector>
+#include <unordered_map>
+#include <memory>
 #include "TFFoundation.hpp"
-#include "tfserviceconfiguration.hpp"
-#include "tfdhcpcd.hpp"
+#include "tfnetworkconfiguration.hpp"
 
 namespace TF::Linux
 {
 
-    class DHCPCDConfiguration : public ServiceConfiguration
+    class NetworkService
     {
     public:
-        DHCPCDConfiguration() : ServiceConfiguration() {}
+        using string_type = String;
+        using network_configuration_map = std::unordered_map<string_type, std::shared_ptr<NetworkConfiguration>>;
 
-        auto load_configurations_from_file(const string_type & file)
-            -> std::pair<wireless_configuration_list, ethernet_configuration_list> override;
+        NetworkService() = default;
+        virtual ~NetworkService() = default;
 
-        void write_configurations_to_file(const wireless_configuration_list & wireless_list,
-                                          const ethernet_configuration_list & ethernet_list,
-                                          const string_type & file) override;
+        virtual void load_configurations_from_file(const string_type & file,
+                                                   network_configuration_map & configurations) = 0;
 
-        auto get_dhcpcd_configuration() const -> DHCPCD
-        {
-            return m_configuration;
-        }
-
-        void set_dhcpcd_configuration(const DHCPCD & config)
-        {
-            m_configuration = config;
-        }
-
-    private:
-        DHCPCD m_configuration{};
+        virtual void write_configurations_to_file(const network_configuration_map & configurations,
+                                                  const string_type & file) = 0;
     };
 
 } // namespace TF::Linux
 
-#endif // TFDHCPCDCONFIGURATION_HPP
+#endif // TFNETWORKSERVICE_HPP

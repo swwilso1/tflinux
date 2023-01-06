@@ -34,32 +34,23 @@ namespace TF::Linux
         addr_mode = address_mode::NONE;
         interface.clear();
         enabled = false;
+        wifi_interface = false;
+        channel = 0;
+        mode = wifi_mode::NONE;
+        standard = wifi_standard::NONE;
+        ssid = string_type{};
+        password = string_type{};
+        wpa_mode = 0;
+        wpa_key_management = string_type{};
+        wpa_pairwise = string_type{};
+        rsn_pairwise = string_type{};
+        dhcp_start_address = address_type{};
+        dhcp_end_address = address_type{};
     }
 
     auto NetworkConfiguration::get_name() const -> string_type
     {
         return interface.get_name();
-    }
-
-    void NetworkConfiguration::update_from(const NetworkConfiguration & config)
-    {
-        addr_mode = config.addr_mode;
-        interface = config.interface;
-	// If the interface is already enabled we probably do not want to disable it
-	// when we have a config with a different enabled setting.  We use configs
-	// that only have partial data and the new config might not have full enabled
-	// information.
-        enabled = enabled ? enabled : config.enabled;
-    }
-
-    void NetworkConfiguration::update_all_but_interface_from(const NetworkConfiguration & config)
-    {
-        addr_mode = config.addr_mode;
-	// If the interface is already enabled we probably do not want to disable it
-	// when we have a config with a different enabled setting.  We use configs
-	// that only have partial data and the new config might not have full enabled
-	// information.
-        enabled = enabled ? enabled : config.enabled;
     }
 
     std::ostream & operator<<(std::ostream & o, const NetworkConfiguration::InterfaceAddressMode & addr_mode)
@@ -80,6 +71,48 @@ namespace TF::Linux
         return o;
     }
 
+    std::ostream & operator<<(std::ostream & o, const NetworkConfiguration::WifiMode & mode)
+    {
+        switch (mode)
+        {
+            case NetworkConfiguration::WifiMode::ACCESS_POINT:
+                o << "ACCESS_POINT";
+                break;
+            case NetworkConfiguration::WifiMode::CLIENT:
+                o << "CLIENT";
+                break;
+            case NetworkConfiguration::WifiMode::NONE:
+                o << "NONE";
+                break;
+        }
+
+        return o;
+    }
+
+    std::ostream & operator<<(std::ostream & o, const NetworkConfiguration::WifiStandard & standard)
+    {
+        switch (standard)
+        {
+            case NetworkConfiguration::WifiStandard::A:
+                o << "A";
+                break;
+            case NetworkConfiguration::WifiStandard::B:
+                o << "B";
+                break;
+            case NetworkConfiguration::WifiStandard::G:
+                o << "G";
+                break;
+            case NetworkConfiguration::WifiStandard::N:
+                o << "N";
+                break;
+            case NetworkConfiguration::WifiStandard::NONE:
+                o << "NONE";
+                break;
+        }
+
+        return o;
+    }
+
     std::ostream & operator<<(std::ostream & o, const NetworkConfiguration & c)
     {
         ClassFormatter * formatter = FormatterFactory::getFormatter();
@@ -89,127 +122,21 @@ namespace TF::Linux
             formatter->addClassMember("address_mode", "addr_mode", c.addr_mode);
             formatter->addClassMember("network_interface", "interface", c.interface);
             formatter->addClassMember<bool>("bool", "enabled", c.enabled);
-            o << *formatter;
-            delete formatter;
-        }
-        return o;
-    }
-
-    void WirelessConfiguration::clear()
-    {
-        NetworkConfiguration::clear();
-        channel = 0;
-        mode = wifi_mode::NONE;
-        standard = wifi_standard::NONE;
-        ssid = string_type{};
-        password = string_type{};
-        wpa_mode = 0;
-        wpa_key_management = string_type{};
-        wpa_pairwise = string_type{};
-        rsn_pairwise = string_type{};
-        dhcp_start_address = address_type{};
-        dhcp_end_address = address_type{};
-    }
-
-    void WirelessConfiguration::update_from(const WirelessConfiguration & config)
-    {
-        NetworkConfiguration::update_from(config);
-        update_non_interface_details_from(config);
-    }
-
-    void WirelessConfiguration::update_all_but_interface_from(const WirelessConfiguration & config)
-    {
-        NetworkConfiguration::update_all_but_interface_from(config);
-        update_non_interface_details_from(config);
-    }
-
-    void WirelessConfiguration::update_from(const NetworkConfiguration & config)
-    {
-        NetworkConfiguration::update_from(config);
-    }
-
-    void WirelessConfiguration::update_all_but_interface_from(const NetworkConfiguration & config)
-    {
-        NetworkConfiguration::update_all_but_interface_from(config);
-    }
-
-    void WirelessConfiguration::update_non_interface_details_from(const WirelessConfiguration & config)
-    {
-        channel = config.channel;
-        mode = config.mode;
-        standard = config.standard;
-        ssid = config.ssid;
-        password = config.password;
-        wpa_mode = config.wpa_mode;
-        wpa_key_management = config.wpa_key_management;
-        wpa_pairwise = config.wpa_pairwise;
-        rsn_pairwise = config.rsn_pairwise;
-        dhcp_start_address = config.dhcp_start_address;
-        dhcp_end_address = config.dhcp_end_address;
-    }
-
-    std::ostream & operator<<(std::ostream & o, const WirelessConfiguration::WifiMode & mode)
-    {
-        switch (mode)
-        {
-            case WirelessConfiguration::WifiMode::ACCESS_POINT:
-                o << "ACCESS_POINT";
-                break;
-            case WirelessConfiguration::WifiMode::CLIENT:
-                o << "CLIENT";
-                break;
-            case WirelessConfiguration::WifiMode::NONE:
-                o << "NONE";
-                break;
-        }
-
-        return o;
-    }
-
-    std::ostream & operator<<(std::ostream & o, const WirelessConfiguration::WifiStandard & standard)
-    {
-        switch (standard)
-        {
-            case WirelessConfiguration::WifiStandard::A:
-                o << "A";
-                break;
-            case WirelessConfiguration::WifiStandard::B:
-                o << "B";
-                break;
-            case WirelessConfiguration::WifiStandard::G:
-                o << "G";
-                break;
-            case WirelessConfiguration::WifiStandard::N:
-                o << "N";
-                break;
-            case WirelessConfiguration::WifiStandard::NONE:
-                o << "NONE";
-                break;
-        }
-
-        return o;
-    }
-
-    std::ostream & operator<<(std::ostream & o, const WirelessConfiguration & c)
-    {
-        ClassFormatter * formatter = FormatterFactory::getFormatter();
-        if (formatter != nullptr)
-        {
-            formatter->setClassName("WirelessConfiguration");
-            formatter->addClassMember("address_mode", "addr_mode", c.addr_mode);
-            formatter->addClassMember("network_interface", "interface", c.interface);
-            formatter->addClassMember<bool>("bool", "enabled", c.enabled);
-            formatter->addClassMember<int32_t>("int32_t", "channel", c.channel);
-            formatter->addClassMember("wifi_mode", "mode", c.mode);
-            formatter->addClassMember("wifi_standard", "standard", c.standard);
-            formatter->addClassMember("string_type", "ssid", c.ssid);
-            formatter->addClassMember("string_type", "password", c.password);
-            formatter->addClassMember<int>("int", "wpa_mode", c.wpa_mode);
-            formatter->addClassMember("string_type", "wpa_key_management", c.wpa_key_management);
-            formatter->addClassMember("string_type", "wpa_pairwise", c.wpa_pairwise);
-            formatter->addClassMember("string_type", "rsn_pairwise", c.rsn_pairwise);
-            formatter->addClassMember("address_type", "dhcp_start_address", c.dhcp_start_address);
-            formatter->addClassMember("address_type", "dhcp_end_address", c.dhcp_end_address);
+            formatter->addClassMember<bool>("bool", "wifi_interface", c.wifi_interface);
+            if (c.wifi_interface)
+            {
+                formatter->addClassMember<int32_t>("int32_t", "channel", c.channel);
+                formatter->addClassMember("wifi_mode", "mode", c.mode);
+                formatter->addClassMember("wifi_standard", "standard", c.standard);
+                formatter->addClassMember("string_type", "ssid", c.ssid);
+                formatter->addClassMember("string_type", "password", c.password);
+                formatter->addClassMember<int>("int", "wpa_mode", c.wpa_mode);
+                formatter->addClassMember("string_type", "wpa_key_management", c.wpa_key_management);
+                formatter->addClassMember("string_type", "wpa_pairwise", c.wpa_pairwise);
+                formatter->addClassMember("string_type", "rsn_pairwise", c.rsn_pairwise);
+                formatter->addClassMember("address_type", "dhcp_start_address", c.dhcp_start_address);
+                formatter->addClassMember("address_type", "dhcp_end_address", c.dhcp_end_address);
+            }
             o << *formatter;
             delete formatter;
         }

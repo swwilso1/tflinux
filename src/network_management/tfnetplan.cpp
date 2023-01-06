@@ -34,13 +34,9 @@ SOFTWARE.
 namespace TF::Linux
 {
 
-    auto NetplanConfiguration::load_configurations_from_file(const string_type & file)
-        -> std::pair<wireless_configuration_list, ethernet_configuration_list>
+    void NetplanService::load_configurations_from_file(const string_type & file,
+                                                       network_configuration_map & configurations)
     {
-        wireless_configuration_list wireless_list{};
-        ethernet_configuration_list ethernet_list{};
-        std::unordered_map<String, EthernetConfiguration> ethernet_map{};
-
         auto file_cstr = file.cStr();
         YAML::Node config_file{};
 
@@ -51,7 +47,7 @@ namespace TF::Linux
         catch (YAML::BadFile & e)
         {
             // The YAML file did not load, we cannot do anything else with this file.
-            return {};
+            return;
         }
 
         if (config_file["network"])
@@ -63,9 +59,19 @@ namespace TF::Linux
                 auto ethernets = network["ethernets"];
                 for (YAML::const_iterator yaml_iter = ethernets.begin(); yaml_iter != ethernets.end(); yaml_iter++)
                 {
-                    EthernetConfiguration ethernet_config{};
                     auto interface_name = yaml_iter->first.as<std::string>();
-                    ethernet_config.interface.set_name(interface_name);
+                    std::shared_ptr<NetworkConfiguration> configuration{};
+                    if (configurations.contains(interface_name))
+                    {
+                        configuration = configurations[interface_name];
+                    }
+                    else
+                    {
+                        configuration = std::make_shared<NetworkConfiguration>();
+                        configurations.insert(std::make_pair(interface_name, configuration));
+                    }
+
+                    configuration->interface.set_name(interface_name);
 
                     auto config_details = yaml_iter->second;
                     if (config_details.IsMap())
@@ -79,7 +85,7 @@ namespace TF::Linux
                                 auto value = inner_map_iter->second.as<std::string>();
                                 if (value == "true")
                                 {
-                                    ethernet_config.addr_mode = NetworkConfiguration::address_mode::DHCP;
+                                    configuration->addr_mode = NetworkConfiguration::address_mode::DHCP;
                                 }
                             }
                             else if (key == "addresses" && inner_map_iter->second.IsSequence())
@@ -89,10 +95,10 @@ namespace TF::Linux
                                      address_iter != inner_map_iter->second.end(); address_iter++)
                                 {
                                     auto address_value = address_iter->as<std::string>();
-                                    ethernet_config.interface.add_address_and_netmask(
+                                    configuration->interface.add_address_and_netmask(
                                         IPAddressAndNetmask{address_value});
                                 }
-                                ethernet_config.addr_mode = NetworkConfiguration::address_mode::STATIC;
+                                configuration->addr_mode = NetworkConfiguration::address_mode::STATIC;
                             }
                             else if (key == "nameservers" && inner_map_iter->second.IsMap())
                             {
@@ -103,7 +109,7 @@ namespace TF::Linux
                                     for (size_t i = 0; i < nameserver_addresses.size(); i++)
                                     {
                                         auto nameserver_address = nameserver_addresses[i].as<std::string>();
-                                        ethernet_config.interface.add_nameserver_address(
+                                        configuration->interface.add_nameserver_address(
                                             IPAddress::address_from_string(nameserver_address));
                                     }
                                 }
@@ -111,8 +117,7 @@ namespace TF::Linux
                         }
                     }
 
-                    ethernet_config.enabled = true;
-                    ethernet_map.insert(std::make_pair(ethernet_config.interface.get_name(), ethernet_config));
+                    configuration->enabled = true;
                 }
             }
 
@@ -123,9 +128,19 @@ namespace TF::Linux
                 {
                     if (wifi_iter->second.IsMap())
                     {
-                        WirelessConfiguration wireless_config{};
                         auto interface_name = wifi_iter->first.as<std::string>();
-                        wireless_config.interface.set_name(interface_name);
+                        std::shared_ptr<NetworkConfiguration> configuration{};
+                        if (configurations.contains(interface_name))
+                        {
+                            configuration = configurations[interface_name];
+                        }
+                        else
+                        {
+                            configuration = std::make_shared<NetworkConfiguration>();
+                            configurations.insert(std::make_pair(interface_name, configuration));
+                        }
+
+                        configuration->interface.set_name(interface_name);
                         auto wifis_map = wifi_iter->second;
 
                         for (YAML::const_iterator wifi_map_iter = wifis_map.begin(); wifi_map_iter != wifis_map.end();
@@ -137,7 +152,7 @@ namespace TF::Linux
                                 auto value = wifi_map_iter->second.as<std::string>();
                                 if (value == "true")
                                 {
-                                    wireless_config.addr_mode = NetworkConfiguration::address_mode::DHCP;
+                                    configuration->addr_mode = NetworkConfiguration::address_mode::DHCP;
                                 }
                             }
                             else if (key == "access-points" && wifi_map_iter->second.IsMap())
@@ -149,10 +164,10 @@ namespace TF::Linux
                                     if (access_points_iter->second.IsMap())
                                     {
                                         auto access_point_name = access_points_iter->first.as<std::string>();
-                                        wireless_config.ssid = access_point_name;
+                                        configuration->ssid = access_point_name;
                                         if (access_points_iter->second["password"])
                                         {
-                                            wireless_config.password =
+                                            configuration->password =
                                                 access_points_iter->second["password"].as<std::string>();
                                         }
                                     }
@@ -160,94 +175,31 @@ namespace TF::Linux
                             }
                         }
 
-                        wireless_config.enabled = true;
-                        wireless_list.emplace_back(wireless_config);
+                        configuration->enabled = true;
                     }
                 }
             }
-
-	    auto update_wireless_config_from_ethernet_config = [](WirelessConfiguration & wireless_config, const EthernetConfiguration & ethernet_config) {
-                wireless_config.addr_mode = ethernet_config.addr_mode;
-		auto addr_and_masks = ethernet_config.interface.get_addresses_and_netmasks();
-		for (auto & addr_mask : addr_and_masks)
-		{
-                    wireless_config.interface.add_address_and_netmask(addr_mask);
-		}
-
-                auto nameservers = ethernet_config.interface.get_nameservers();
-                for (auto & nameserver : nameservers)
-                {
-                    wireless_config.interface.add_nameserver_address(nameserver);
-                }
-	    };
-
-            for (auto & wireless_config : wireless_list)
-            {
-                auto wireless_name = wireless_config.interface.get_name();
-                if (ethernet_map.contains(wireless_name))
-                {
-                    auto & ethernet_config = ethernet_map[wireless_name];
-                    update_wireless_config_from_ethernet_config(wireless_config, ethernet_config);
-                    ethernet_map.erase(wireless_name);
-                }
-            }
-
-	    // It is possible to have loaded a wireless interface as an ethernet interface
-	    // if the interface is in static mode.  To catch that case, we troll through
-	    // the ethernet interfaces and see if they match wifi interfaces from a
-	    // NetworkInterfaces object.
-	    NetworkInterfaces interfaces{};
-	    interfaces.load_interfaces();
-
-	    std::vector<String> interface_names{};
-	    for (auto & pair : ethernet_map)
-	    {
-		    interface_names.emplace_back(pair.first);
-	    }
-
-	    for (auto & ethernet_interface_name : interface_names)
-	    {
-		auto ethernet_interface = interfaces.get_interface_by_name(ethernet_interface_name);
-		if (ethernet_interface)
-		{
-		    if (ethernet_interface.value().is_wireless_interface())
-		    {
-			auto & ethernet_config = ethernet_map[ethernet_interface_name];
-			WirelessConfiguration wireless_config{};
-			wireless_config.update_from(ethernet_config);
-			wireless_list.emplace_back(wireless_config);
-			ethernet_map.erase(ethernet_interface_name);
-		    }
-		}
-	    }
-
-            std::for_each(ethernet_map.cbegin(), ethernet_map.cend(),
-                          [&ethernet_list](const std::pair<const String, EthernetConfiguration> pair) -> void {
-                              ethernet_list.emplace_back(pair.second);
-                          });
         }
-
-        return {wireless_list, ethernet_list};
     }
 
-    void NetplanConfiguration::write_configurations_to_file(const wireless_configuration_list & wireless_list,
-                                                            const ethernet_configuration_list & ethernet_list,
-                                                            const string_type & file)
+    void NetplanService::write_configurations_to_file(const network_configuration_map & configurations,
+                                                      const string_type & file)
     {
         YAML::Emitter yaml_stream{};
 
-        auto write_interface_for_ethernets = [&yaml_stream](const NetworkConfiguration & config) -> void {
-            yaml_stream << YAML::Key << config.interface.get_name();
+        auto write_interface_for_ethernets =
+            [&yaml_stream](const std::shared_ptr<NetworkConfiguration> & config) -> void {
+            yaml_stream << YAML::Key << config->interface.get_name();
             yaml_stream << YAML::Value;
             yaml_stream << YAML::BeginMap;
-            if (config.addr_mode == NetworkConfiguration::address_mode::DHCP)
+            if (config->addr_mode == NetworkConfiguration::address_mode::DHCP)
             {
                 yaml_stream << YAML::Key << "dhcp4";
                 yaml_stream << YAML::Value << true;
             }
             else
             {
-                auto addresses_and_masks = config.interface.get_addresses_and_netmasks();
+                auto addresses_and_masks = config->interface.get_addresses_and_netmasks();
                 yaml_stream << YAML::Key << "addresses";
                 yaml_stream << YAML::Value;
                 yaml_stream << YAML::Flow;
@@ -264,7 +216,7 @@ namespace TF::Linux
                               });
                 yaml_stream << YAML::EndSeq;
 
-                auto nameservers = config.interface.get_nameservers();
+                auto nameservers = config->interface.get_nameservers();
                 if (! nameservers.empty())
                 {
                     yaml_stream << YAML::Key << "nameservers";
@@ -287,42 +239,31 @@ namespace TF::Linux
             yaml_stream << YAML::EndMap;
         };
 
-        auto should_use_config_for_ethernets = [](const WirelessConfiguration & config) -> bool {
-            return config.enabled && ((config.mode == WirelessConfiguration::wifi_mode::ACCESS_POINT) ||
-                                      (config.mode == WirelessConfiguration::wifi_mode::CLIENT &&
-                                       config.addr_mode == NetworkConfiguration::address_mode::STATIC));
+        auto should_use_config_for_ethernets = [](const std::shared_ptr<NetworkConfiguration> & config) -> bool {
+            return (config->enabled && ! config->wifi_interface) ||
+                   (config->enabled && config->wifi_interface &&
+                    ((config->mode == NetworkConfiguration::wifi_mode::ACCESS_POINT) ||
+                     (config->mode == NetworkConfiguration::wifi_mode::CLIENT &&
+                      config->addr_mode == NetworkConfiguration::address_mode::STATIC)));
         };
 
         auto needs_ethernets_section = false;
         auto needs_wifis_section = false;
 
-        // Check for ethernet configurations that should go in the ethernets section.
-        for (auto & ethernet_config : ethernet_list)
+        // Check for configurations that should go in the ethernets section.
+        for (auto & pair : configurations)
         {
-            if (ethernet_config.enabled)
+            if (should_use_config_for_ethernets(pair.second))
             {
                 needs_ethernets_section = true;
                 break;
             }
         }
 
-        if (! needs_ethernets_section)
+        // Now check the wireless configurations to see if any need the wifis section.
+        for (auto & pair : configurations)
         {
-            // Check for any wireless configurations that should go in the ethernets section.
-            for (auto & wireless_config : wireless_list)
-            {
-                if (should_use_config_for_ethernets(wireless_config))
-                {
-                    needs_ethernets_section = true;
-                    break;
-                }
-            }
-        }
-
-        // Now check the wireless interfaces to see if any need the wifis section.
-        for (auto & wireless_config : wireless_list)
-        {
-            if (wireless_config.enabled && wireless_config.mode == WirelessConfiguration::wifi_mode::CLIENT)
+            if (pair.second->enabled && pair.second->mode == NetworkConfiguration::wifi_mode::CLIENT)
             {
                 needs_wifis_section = true;
                 break;
@@ -346,21 +287,22 @@ namespace TF::Linux
             yaml_stream << YAML::BeginMap;
 
             // Run through the ethernet config list.
-            std::for_each(ethernet_list.cbegin(), ethernet_list.cend(),
-                          [&write_interface_for_ethernets](const EthernetConfiguration & config) -> void {
-                              if (config.enabled)
+            std::for_each(configurations.cbegin(), configurations.cend(),
+                          [&should_use_config_for_ethernets, &write_interface_for_ethernets](
+                              const std::pair<string_type, std::shared_ptr<NetworkConfiguration>> & pair) -> void {
+                              if (should_use_config_for_ethernets(pair.second))
                               {
-                                  write_interface_for_ethernets(config);
+                                  write_interface_for_ethernets(pair.second);
                               }
                           });
 
             // Run through the wireless config list.
-            std::for_each(wireless_list.cbegin(), wireless_list.cend(),
-                          [&write_interface_for_ethernets,
-                           &should_use_config_for_ethernets](const WirelessConfiguration & config) -> void {
-                              if (should_use_config_for_ethernets(config))
+            std::for_each(configurations.cbegin(), configurations.cend(),
+                          [&write_interface_for_ethernets, &should_use_config_for_ethernets](
+                              const std::pair<string_type, std::shared_ptr<NetworkConfiguration>> & pair) -> void {
+                              if (should_use_config_for_ethernets(pair.second))
                               {
-                                  write_interface_for_ethernets(config);
+                                  write_interface_for_ethernets(pair.second);
                               }
                           });
             yaml_stream << YAML::EndMap;
@@ -373,71 +315,38 @@ namespace TF::Linux
             yaml_stream << YAML::Value;
 
             yaml_stream << YAML::BeginMap;
-            std::for_each(wireless_list.cbegin(), wireless_list.cend(),
-                          [&yaml_stream](const WirelessConfiguration & config) -> void {
-                              if (config.enabled && config.mode == WirelessConfiguration::wifi_mode::CLIENT)
-                              {
-                                  yaml_stream << YAML::Key << config.interface.get_name();
-                                  yaml_stream << YAML::Value;
-                                  yaml_stream << YAML::BeginMap;
-                                  yaml_stream << YAML::Key << "optional";
-                                  yaml_stream << YAML::Value << true;
+            std::for_each(
+                configurations.cbegin(), configurations.cend(),
+                [&yaml_stream](const std::pair<string_type, std::shared_ptr<NetworkConfiguration>> & pair) -> void {
+                    if (pair.second->enabled && pair.second->mode == NetworkConfiguration::wifi_mode::CLIENT)
+                    {
+                        yaml_stream << YAML::Key << pair.second->interface.get_name();
+                        yaml_stream << YAML::Value;
+                        yaml_stream << YAML::BeginMap;
+                        yaml_stream << YAML::Key << "optional";
+                        yaml_stream << YAML::Value << true;
 
-                                  if (config.addr_mode == NetworkConfiguration::InterfaceAddressMode::DHCP)
-                                  {
-                                      yaml_stream << YAML::Key << "dhcp4";
-                                      yaml_stream << YAML::Value << true;
-                                  }
+                        if (pair.second->addr_mode == NetworkConfiguration::InterfaceAddressMode::DHCP)
+                        {
+                            yaml_stream << YAML::Key << "dhcp4";
+                            yaml_stream << YAML::Value << true;
+                        }
 
-                                  yaml_stream << YAML::Key << "access-points";
-                                  yaml_stream << YAML::Value;
-                                  yaml_stream << YAML::BeginMap;
-                                  yaml_stream << YAML::Key << YAML::DoubleQuoted << config.ssid;
-                                  yaml_stream << YAML::Value;
-                                  yaml_stream << YAML::BeginMap;
-                                  yaml_stream << YAML::Key << "password";
-                                  yaml_stream << YAML::Value << YAML::DoubleQuoted << config.password;
-                                  yaml_stream << YAML::EndMap;
-                                  yaml_stream << YAML::EndMap;
-                                  yaml_stream << YAML::EndMap;
-                              }
-                          });
+                        yaml_stream << YAML::Key << "access-points";
+                        yaml_stream << YAML::Value;
+                        yaml_stream << YAML::BeginMap;
+                        yaml_stream << YAML::Key << YAML::DoubleQuoted << pair.second->ssid;
+                        yaml_stream << YAML::Value;
+                        yaml_stream << YAML::BeginMap;
+                        yaml_stream << YAML::Key << "password";
+                        yaml_stream << YAML::Value << YAML::DoubleQuoted << pair.second->password;
+                        yaml_stream << YAML::EndMap;
+                        yaml_stream << YAML::EndMap;
+                        yaml_stream << YAML::EndMap;
+                    }
+                });
             yaml_stream << YAML::EndMap;
         }
-
-#if 0
-        if (wireless_configuration.enabled && wireless_configuration.mode == WirelessConfiguration::wifi_mode::CLIENT)
-        {
-            yaml_stream << YAML::Key << "wifis";
-            yaml_stream << YAML::Value;
-
-            yaml_stream << YAML::BeginMap;
-            yaml_stream << YAML::Key << wireless_configuration.interface.get_name();
-            yaml_stream << YAML::Value;
-            yaml_stream << YAML::BeginMap;
-            yaml_stream << YAML::Key << "optional";
-            yaml_stream << YAML::Value << true;
-
-            if (wireless_configuration.addr_mode == NetworkConfiguration::InterfaceAddressMode::DHCP)
-            {
-                yaml_stream << YAML::Key << "dhcp4";
-                yaml_stream << YAML::Value << true;
-            }
-
-            yaml_stream << YAML::Key << "access-points";
-            yaml_stream << YAML::Value;
-            yaml_stream << YAML::BeginMap;
-            yaml_stream << YAML::Key << YAML::DoubleQuoted << wireless_configuration.ssid;
-            yaml_stream << YAML::Value;
-            yaml_stream << YAML::BeginMap;
-            yaml_stream << YAML::Key << "password";
-            yaml_stream << YAML::Value << YAML::DoubleQuoted << wireless_configuration.password;
-            yaml_stream << YAML::EndMap;
-            yaml_stream << YAML::EndMap;
-            yaml_stream << YAML::EndMap;
-            yaml_stream << YAML::EndMap;
-        }
-#endif
 
         yaml_stream << YAML::EndMap;
         yaml_stream << YAML::EndMap;

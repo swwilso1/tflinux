@@ -51,7 +51,7 @@ namespace TF::Linux
         bool clientid{true};
         bool duid{false};
         bool persistent{true};
-        std::vector<EthernetConfiguration> interfaces{};
+        std::vector<NetworkConfiguration> configurations{};
 
         DHCPCD() = default;
     };

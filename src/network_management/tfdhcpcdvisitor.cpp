@@ -97,12 +97,12 @@ namespace TF::Linux
         if (! m_ethernet_stack.empty())
         {
             auto & config = m_ethernet_stack.top();
-            m_configuration.interfaces.emplace_back(config);
+            m_configuration.configurations.emplace_back(config);
             m_ethernet_stack.pop();
         }
 
         auto text = context->TEXT()->getText();
-        EthernetConfiguration config{};
+        NetworkConfiguration config{};
         config.interface.set_name(text);
         config.enabled = true;
         config.addr_mode = NetworkConfiguration::address_mode::STATIC;
@@ -288,7 +288,7 @@ namespace TF::Linux
         while (! m_ethernet_stack.empty())
         {
             auto & config = m_ethernet_stack.top();
-            m_configuration.interfaces.emplace_back(config);
+            m_configuration.configurations.emplace_back(config);
             m_ethernet_stack.pop();
         }
         return m_configuration;

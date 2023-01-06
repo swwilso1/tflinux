@@ -25,28 +25,27 @@ SOFTWARE.
 
 ******************************************************************************/
 
-#ifndef TFDNSMASQCONFIGURATION_HPP
-#define TFDNSMASQCONFIGURATION_HPP
+#ifndef TFDNSMASQSERVICE_HPP
+#define TFDNSMASQSERVICE_HPP
 
 #include "TFFoundation.hpp"
-#include "tfserviceconfiguration.hpp"
+#include "tfnetworkservice.hpp"
 
 namespace TF::Linux
 {
 
-    class DNSMasqConfiguration : ServiceConfiguration
+    class DNSMasqService : NetworkService
     {
     public:
-        DNSMasqConfiguration() = default;
+        DNSMasqService() = default;
 
-        auto load_configurations_from_file(const string_type & file)
-            -> std::pair<wireless_configuration_list, ethernet_configuration_list> override;
+        void load_configurations_from_file(const string_type & file,
+                                           network_configuration_map & configurations) override;
 
-        void write_configurations_to_file(const wireless_configuration_list & wireless_list,
-                                          const ethernet_configuration_list & ethernet_list,
+        void write_configurations_to_file(const network_configuration_map & configurations,
                                           const string_type & file) override;
     };
 
 } // namespace TF::Linux
 
-#endif // TFDNSMASQCONFIGURATION_HPP
+#endif // TFDNSMASQSERVICE_HPP
