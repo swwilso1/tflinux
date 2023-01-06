@@ -22,7 +22,6 @@ include_directories(
     src/systemd
     src/udev
     ${GENERATED_SOURCES_DIR}
-    ${ANTLR_RUNTIME_INSTALL_DIR}/include/antlr4-runtime
 )
 
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/headers/${LIBRARY_NAME})
@@ -56,11 +55,13 @@ target_include_directories(${SHARED_LIBRARY_NAME} INTERFACE
 target_link_libraries(${SHARED_LIBRARY_NAME} PRIVATE
         TFFoundation::TFFoundation-shared
         CONAN_PKG::yaml-cpp
+        CONAN_PKG::antlr4-cppruntime
         udev
         ${SANITIZER_LIBRARY})
 target_link_libraries(${SHARED_LIBRARY_NAME} INTERFACE
         TFFoundation::TFFoundation-shared
         CONAN_PKG::yaml-cpp
+        CONAN_PKG::antlr4-cppruntime
         udev
         ${SANITIZER_LIBRARY})
 add_dependencies(${SHARED_LIBRARY_NAME} LinuxHeaders)
@@ -75,11 +76,13 @@ target_include_directories(${STATIC_LIBRARY_NAME} INTERFACE
 target_link_libraries(${STATIC_LIBRARY_NAME} PRIVATE
         TFFoundation::TFFoundation-static
         CONAN_PKG::yaml-cpp
+        CONAN_PKG::antlr4-cppruntime
         udev
         ${SANITIZER_LIBRARY})
 target_link_libraries(${STATIC_LIBRARY_NAME} INTERFACE
         TFFoundation::TFFoundation-static
         CONAN_PKG::yaml-cpp
+        CONAN_PKG::antlr4-cppruntime
         udev
         ${SANITIZER_LIBRARY})
 add_dependencies(${STATIC_LIBRARY_NAME} LinuxHeaders)
