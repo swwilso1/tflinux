@@ -169,6 +169,7 @@ namespace TF::Linux
                                         {
                                             configuration->password =
                                                 access_points_iter->second["password"].as<std::string>();
+                                            configuration->mode = NetworkConfiguration::WifiMode::ACCESS_POINT;
                                         }
                                     }
                                 }

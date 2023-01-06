@@ -57,6 +57,7 @@ namespace TF::Linux
             }
             configuration->interface.set_name(config_table["interface"]);
             configuration->wifi_interface = true;
+            configuration->mode = NetworkConfiguration::WifiMode::ACCESS_POINT;
 
             if (config_table.contains("ssid"))
             {
