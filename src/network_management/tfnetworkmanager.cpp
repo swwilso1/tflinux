@@ -151,7 +151,7 @@ namespace TF::Linux
 
     void NetworkManager::set_configuration_for_name(const string_type & name, const NetworkConfiguration & config)
     {
-        m_configuration_map.insert(std::make_pair(name, config));
+        m_configuration_map[name] = config;
     }
 
     void NetworkManager::remove_configuration_for_name(const string_type & name)
@@ -275,12 +275,32 @@ namespace TF::Linux
         if (platform_id.get_vendor() == "Ubuntu" &&
             platform_id.get_processor_architecture() == PlatformId::ProcessorArchitecture::X86_64)
         {
+            string_type netplan_conf_file{"/etc/netplan/99-tflinux.yaml"};
+
+	    // We are going to write a new yaml file for netplan, go through and find any existing yaml files
+	    // and move them to .yaml.orig.
+            string_type netplan_directory{"/etc/netplan"};
+	    auto files = manager.contentsOfDirectoryAtPath(netplan_directory);
+	    for (auto & file : files)
+	    {
+                auto full_file_name = netplan_directory + FileManager::pathSeparator + file;
+                if (manager.fileExistsAtPath(full_file_name) && manager.extensionOfItemAtPath(full_file_name) == "yaml")
+                {
+                    auto new_file_name = full_file_name + ".orig";
+		    manager.moveItemAtPathToPath(full_file_name, new_file_name);
+                }
+	    }
+
+	    if (manager.fileExistsAtPath(netplan_conf_file))
+            {
+                manager.removeItemAtPath(netplan_conf_file);
+            }
+
             // We are running on an Intel x64 Ubuntu box.  Assume that we have access to the netplan service.
             NetplanService netplan_service{};
-            string_type netplan_conf_file{"/etc/netplan/99-tflinux-yaml"};
             netplan_service.write_configurations_to_file(config_map, netplan_conf_file);
 
-            Process netplan{"netplan apply"};
+            Process netplan{"/usr/sbin/netplan apply"};
             netplan.launch();
             netplan.wait();
         }
@@ -293,16 +313,16 @@ namespace TF::Linux
             string_type dhcpcd_conf_file{"/etc/dhcpcd.conf"};
             dhcpcd_service.write_configurations_to_file(config_map, dhcpcd_conf_file);
 
-            Process dhcpcd{"systemctl restart dhcpcd"};
+            Process dhcpcd{"/usr/bin/systemctl restart dhcpcd"};
             dhcpcd.launch();
             dhcpcd.wait();
         }
 
-        Process dnsmasq{"systemctl restart dnsmasq"};
+        Process dnsmasq{"/usr/bin/systemctl restart dnsmasq"};
         dnsmasq.launch();
         dnsmasq.wait();
 
-        Process hostapd{"systemctl restart hostapd"};
+        Process hostapd{"/usr/bin/systemctl restart hostapd"};
         hostapd.launch();
         hostapd.wait();
     }

@@ -241,7 +241,12 @@ namespace TF::Linux
         };
 
         auto should_use_config_for_ethernets = [](const std::shared_ptr<NetworkConfiguration> & config) -> bool {
-            return (config->enabled && ! config->wifi_interface) ||
+            if (config->interface.is_loopback_interface())
+            {
+                return false;
+            }
+
+            return (config->enabled && (! config->wifi_interface)) ||
                    (config->enabled && config->wifi_interface &&
                     ((config->mode == NetworkConfiguration::wifi_mode::ACCESS_POINT) ||
                      (config->mode == NetworkConfiguration::wifi_mode::CLIENT &&
@@ -264,7 +269,7 @@ namespace TF::Linux
         // Now check the wireless configurations to see if any need the wifis section.
         for (auto & pair : configurations)
         {
-            if (pair.second->enabled && pair.second->mode == NetworkConfiguration::wifi_mode::CLIENT)
+            if (pair.second->enabled && pair.second->wifi_interface && pair.second->mode == NetworkConfiguration::wifi_mode::CLIENT)
             {
                 needs_wifis_section = true;
                 break;
@@ -287,7 +292,7 @@ namespace TF::Linux
             yaml_stream << YAML::Value;
             yaml_stream << YAML::BeginMap;
 
-            // Run through the ethernet config list.
+            // Run through the config list.
             std::for_each(configurations.cbegin(), configurations.cend(),
                           [&should_use_config_for_ethernets, &write_interface_for_ethernets](
                               const std::pair<string_type, std::shared_ptr<NetworkConfiguration>> & pair) -> void {
@@ -297,15 +302,6 @@ namespace TF::Linux
                               }
                           });
 
-            // Run through the wireless config list.
-            std::for_each(configurations.cbegin(), configurations.cend(),
-                          [&write_interface_for_ethernets, &should_use_config_for_ethernets](
-                              const std::pair<string_type, std::shared_ptr<NetworkConfiguration>> & pair) -> void {
-                              if (should_use_config_for_ethernets(pair.second))
-                              {
-                                  write_interface_for_ethernets(pair.second);
-                              }
-                          });
             yaml_stream << YAML::EndMap;
         }
 
@@ -319,7 +315,7 @@ namespace TF::Linux
             std::for_each(
                 configurations.cbegin(), configurations.cend(),
                 [&yaml_stream](const std::pair<string_type, std::shared_ptr<NetworkConfiguration>> & pair) -> void {
-                    if (pair.second->enabled && pair.second->mode == NetworkConfiguration::wifi_mode::CLIENT)
+                    if (pair.second->enabled && pair.second->wifi_interface && pair.second->mode == NetworkConfiguration::wifi_mode::CLIENT)
                     {
                         yaml_stream << YAML::Key << pair.second->interface.get_name();
                         yaml_stream << YAML::Value;
@@ -353,8 +349,18 @@ namespace TF::Linux
         yaml_stream << YAML::EndMap;
 
         String yaml_file_contents{yaml_stream.c_str()};
+	{
         FileHandle write_handle = FileHandle::fileHandleForWritingAtPath(file, true);
         write_handle.writeString(yaml_file_contents);
+	write_handle.writeString("\n");
+	}
+	FilePermissions permissions{};
+	FileManager manager{};
+	permissions.setUserReadPermission(true);
+	permissions.setUserWritePermission(true);
+	permissions.setGroupReadPermission(true);
+	permissions.setOtherReadPermission(true);
+        manager.setPermissionsForItemAtPath(file, permissions);
     }
 
 } // namespace TF::Linux

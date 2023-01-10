@@ -162,7 +162,7 @@ namespace TF::Linux
                 }
 
                 table["channel"] = string_type::initWithFormat("%d", configuration->channel);
-                table["mac_addr_acl"] = "0";
+                table["macaddr_acl"] = "0";
                 table["auth_algs"] = "1";
                 table["ignore_broadcast_ssid"] = "0";
 
