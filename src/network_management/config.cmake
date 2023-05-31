@@ -9,7 +9,7 @@ include(FindJava)
 
 find_package(Java 1.8 REQUIRED)
 
-set(ANTLR_JAR antlr-4.12.0-complete.jar)
+set(ANTLR_JAR antlr-4.13.0-complete.jar)
 find_file(ANTLR_JAR_LOCATION ${ANTLR_JAR} PATHS "/usr/local/lib" "/usr/lib")
 
 set(GENERATED_DHCPCD_SOURCE_FILES
