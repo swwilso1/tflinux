@@ -468,7 +468,7 @@ namespace TF::Linux::Udev
      * a device monitor.  The only thing not provided is a poll kind of object
      * that will check to see if there is a device ready as a result of monitoring.
      *
-     * The class lets you specify the kind of device to monitor for and the system
+     * The class lets you specify the kind of device for which to monitor and the system
      * will notify the monitor when a device is ready.
      */
     class Monitor
@@ -485,7 +485,7 @@ namespace TF::Linux::Udev
          */
         Monitor(const context_type & ctx, const string_type & name);
 
-        /** descrutor */
+        /** destructor */
         ~Monitor();
 
         /**
