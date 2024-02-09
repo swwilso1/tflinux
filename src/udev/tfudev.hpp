@@ -369,6 +369,8 @@ namespace TF::Linux::Udev
         friend class Monitor;
     };
 
+    std::ostream & operator<<(std::ostream & o, const Device & d);
+
     /**
      * The Query class encapsulates the udev library concept of enumeration
      * requests.

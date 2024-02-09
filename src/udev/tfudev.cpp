@@ -361,11 +361,11 @@ namespace TF::Linux::Udev
         // OSTREAM_HELPER(sysname, "sysname=", get_sysname)
 
         // Do not output syspath, it is quite verbose.
-        // data_writer("syspath=", &Device::get_syspath, *this);
+        data_writer("syspath=", &Device::get_syspath, *this);
         data_writer("sysnum=", &Device::get_sysnum, *this);
 
         // Do not output dev path, it is quite verbose.
-        // data_writer("devpath=", &Device::get_devpath, *this);
+        data_writer("devpath=", &Device::get_devpath, *this);
         data_writer("subsystem=", &Device::get_subsystem, *this);
         data_writer("driver=", &Device::get_driver, *this);
         data_writer("action=", &Device::get_action, *this);
@@ -508,6 +508,11 @@ namespace TF::Linux::Udev
                 map.insert(std::make_pair(attribute_name, attribute_value));
             }
         }
+    }
+
+    std::ostream & operator<<(std::ostream & o, const Device & d)
+    {
+        return d.description(o);
     }
 
     Query::Query(const context_type & ctx) : m_enumerator(nullptr)
