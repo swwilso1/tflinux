@@ -336,35 +336,39 @@ namespace TF::Linux::Udev
         return attribute_map;
     }
 
-#define OSTREAM_HELPER(var, text, method) \
-    auto var = method();                  \
-    if ((var).length() > 0)               \
-    {                                     \
-        if (needs_comma)                  \
-        {                                 \
-            o << ",";                     \
-        }                                 \
-        o << (text) << (var);             \
-        needs_comma = true;               \
-    }
-
     std::ostream & Device::description(std::ostream & o) const
     {
         bool needs_comma{false};
 
+        auto data_writer = [&o, &needs_comma](const string_type & text,
+                                              const std::function<string_type(const Device &)> & method,
+                                              const Device & device) {
+            if (const auto var = method(device); ! var.empty())
+            {
+                if (needs_comma)
+                {
+                    o << ",";
+                }
+                o << text << var;
+                needs_comma = true;
+            }
+        };
+
         o << "Device(";
 
-        OSTREAM_HELPER(sysname, "sysname=", get_sysname)
+        data_writer("sysname=", &Device::get_sysname, *this);
+
+        // OSTREAM_HELPER(sysname, "sysname=", get_sysname)
 
         // Do not output syspath, it is quite verbose.
-        // OSTREAM_HELPER(syspath, "syspath=", get_syspath);
-        OSTREAM_HELPER(sysnum, "sysnum=", get_sysnum)
+        // data_writer("syspath=", &Device::get_syspath, *this);
+        data_writer("sysnum=", &Device::get_sysnum, *this);
 
         // Do not output dev path, it is quite verbose.
-        // OSTREAM_HELPER(devpath, "devpath=", get_devpath);
-        OSTREAM_HELPER(subsystem, "subsystem=", get_subsystem)
-        OSTREAM_HELPER(driver, "driver=", get_driver)
-        OSTREAM_HELPER(ACTION, "action=", get_action)
+        // data_writer("devpath=", &Device::get_devpath, *this);
+        data_writer("subsystem=", &Device::get_subsystem, *this);
+        data_writer("driver=", &Device::get_driver, *this);
+        data_writer("action=", &Device::get_action, *this);
 
         o << ")";
 
